@@ -37,16 +37,17 @@ test('health dan endpoint tidak dikenal menggunakan status yang benar', async ()
   await api.get('/tidak-ada').expect(404);
 });
 
-test('CRUD barang, penolakan stok langsung, dan penghapusan permanen stok nol', async () => {
+test('CRUD barang, penolakan stok langsung, dan penghapusan permanen', async () => {
   const c = (await api.post('/api/barang').send({ nama: 'Map', kategori: 'Aksesoris', harga: 4000 }).expect(201)).body.data;
-  assert.equal(Object.hasOwn(c, 'createdAt'), false);
-  assert.equal(Object.hasOwn(c, 'updatedAt'), false);
+  assert.ok(Number.isFinite(Date.parse(c.createdAt)));
+  assert.ok(Number.isFinite(Date.parse(c.updatedAt)));
   await api.get(`/api/barang/${c._id}`).expect(200);
   const updated = await api.patch(`/api/barang/${c._id}`).send({ nama: 'Map Plastik', harga: 4500 }).expect(200);
   assert.equal(updated.body.data.harga, 4500);
-  assert.equal(Object.hasOwn(updated.body.data, 'updatedAt'), false);
+  assert.equal(updated.body.data.createdAt, c.createdAt);
+  assert.ok(Date.parse(updated.body.data.updatedAt) >= Date.parse(c.updatedAt));
+  await api.patch(`/api/barang/${c._id}`).send({ updatedAt: '2000-01-01T00:00:00Z' }).expect(400);
   await api.patch(`/api/barang/${c._id}`).send({ stok: 99 }).expect(400);
-  await api.delete(`/api/barang/${a._id}`).expect(409);
   await api.delete(`/api/barang/${c._id}`).expect(200);
   await api.get(`/api/barang/${c._id}`).expect(404);
   assert.equal(await Barang.countDocuments({ _id: c._id }), 0);
@@ -205,20 +206,21 @@ test('filter riwayat dan laporan rentang tanggal menghormati batas hari WIB', as
   for (const query of ['dari=2026-02-30', 'dari=2026-11-22&sampai=2026-11-20', 'status=salah', 'barangId=x']) await api.get(`/api/transaksi?${query}`).expect(400);
 });
 
-test('hapus barang mempertahankan riwayat dan menolak pembatalan tanpa perubahan sebagian', async () => {
-  const transaksi = (await sale([{ barangId: a._id, jumlah: 5 }, { barangId: b._id, jumlah: 4 }]).expect(201)).body.data;
+test('hapus barang berstok mempertahankan riwayat dan menolak pembatalan tanpa perubahan sebagian', async () => {
+  const transaksi = (await sale([{ barangId: a._id, jumlah: 2 }, { barangId: b._id, jumlah: 1 }]).expect(201)).body.data;
+  assert.equal(await stock(b), 3);
   await api.delete(`/api/barang/${b._id}`).expect(200);
   assert.equal(await Barang.countDocuments({ _id: b._id }), 0);
   await api.post('/api/restock').send({ items: [{ barangId: b._id, jumlah: 1 }] }).expect(404);
   const cancellation = await api.patch(`/api/transaksi/${transaksi._id}/batal`).send({ alasan: 'Batal' }).expect(409);
   assert.match(cancellation.body.message, /sudah dihapus/);
-  assert.equal(await stock(a), 0);
+  assert.equal(await stock(a), 3);
   await api.get(`/api/barang/${b._id}`).expect(404);
   const history = (await api.get(`/api/transaksi/${transaksi._id}`).expect(200)).body.data;
   assert.equal(history.status, 'selesai');
   assert.equal(history.items.find((item) => item.barangId === b._id).nama, 'Buku');
-  assert.equal(history.total, 37500);
-  assert.equal((await api.get('/api/laporan/penjualan')).body.data.totalPenjualan, 37500);
+  assert.equal(history.total, 12000);
+  assert.equal((await api.get('/api/laporan/penjualan')).body.data.totalPenjualan, 12000);
 });
 
 test('database kosong memiliki laporan dan ketersediaan yang jelas', async () => {
@@ -266,4 +268,21 @@ test('pembatalan restock bersamaan hanya mengurangi stok sekali', async () => {
   const responses = await Promise.all([cancel(), cancel()]);
   assert.deepEqual(responses.map((r) => r.status).sort(), [200, 409]);
   assert.equal(await stock(a), 5);
+});
+
+test('PUT mengganti seluruh data editable tanpa mengubah stok atau waktu pembuatan', async () => {
+  const body = { nama: 'Pulpen Gel', kategori: 'Peralatan', harga: 4500, stokMinimum: 3 };
+  const result = await api.put(`/api/barang/${a._id}`).send(body).expect(200);
+  assert.equal(result.body.data.nama, body.nama);
+  assert.equal(result.body.data.kategori, body.kategori);
+  assert.equal(result.body.data.harga, body.harga);
+  assert.equal(result.body.data.stokMinimum, body.stokMinimum);
+  assert.equal(result.body.data.stok, 5);
+  assert.equal(result.body.data.createdAt, a.createdAt);
+  assert.ok(Date.parse(result.body.data.updatedAt) >= Date.parse(a.updatedAt));
+  await api.put(`/api/barang/${a._id}`).send({ harga: 100 }).expect(400);
+  await api.put(`/api/barang/${a._id}`).send({ ...body, stok: 100 }).expect(400);
+  await api.put(`/api/barang/${a._id}`).send({ ...body, createdAt: '2000-01-01T00:00:00Z' }).expect(400);
+  await api.put('/api/barang/000000000000000000000000').send(body).expect(404);
+  await api.put(`/api/barang/${b._id}`).send(body).expect(409);
 });

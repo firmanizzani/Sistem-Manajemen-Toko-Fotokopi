@@ -2,19 +2,64 @@
   "info": {
     "name": "Sistem Manajemen Toko Fotokopi",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Jalankan berurutan. Penjualan memakai /api/transaksi; barang masuk memakai /api/restock. Membuat dua barang contoh, restock, penjualan, pembatalan, dan penghapusan permanen barang contoh."
+    "description": "Collection presentasi. Jalankan npm start dan pastikan barang awal sudah diisi dengan npm run seed. Mulai dari 0. Health Check, lalu jalankan folder berurutan. Barang CRUD contoh dihapus di akhir folder Barang; restock dan penjualan dibatalkan untuk mengembalikan stok. Jika berhenti di tengah, perubahan yang sudah dikirim tetap berlaku. Jangan mengirim ulang penjualan yang sudah berhasil tanpa memeriksa riwayat.\n\nArti variabel: pulpenPilotId = Pulpen Pilot Hitam; bukuTulisId = Buku Tulis Sinar Dunia 38; pulpenContohId = pulpen baru dari langkah 3. Arahkan mouse ke {{baseUrl}} untuk melihat nilainya, atau buka Variables pada collection. ID harus diambil dari field _id response, bukan nomor TRX/RST. Jangan mengisi ID sendiri jika mengikuti langkah berurutan."
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://127.0.0.1:3000"
+      "value": "http://127.0.0.1:3000",
+      "type": "string",
+      "description": "Alamat API lokal. Tidak perlu diganti jika server menggunakan port 3000."
+    },
+    {
+      "key": "kodeContoh",
+      "value": "",
+      "type": "string",
+      "description": "Angka unik untuk nama pulpen contoh. Diisi otomatis saat mengirim 0. Health Check."
+    },
+    {
+      "key": "pulpenPilotId",
+      "value": "",
+      "type": "string",
+      "description": "ID Pulpen Pilot Hitam. Diisi otomatis dari folder Barang, langkah 1: READ semua barang."
+    },
+    {
+      "key": "bukuTulisId",
+      "value": "",
+      "type": "string",
+      "description": "ID Buku Tulis Sinar Dunia 38. Diisi otomatis dari folder Barang, langkah 1: READ semua barang."
+    },
+    {
+      "key": "pulpenContohId",
+      "value": "",
+      "type": "string",
+      "description": "ID pulpen baru yang dibuat pada langkah 3. Dipakai untuk READ detail, PUT, PATCH, dan DELETE pada langkah 4–7."
+    },
+    {
+      "key": "restockContohId",
+      "value": "",
+      "type": "string",
+      "description": "ID restock dari langkah Tambah restock. Dipakai untuk detail dan pembatalan restock tersebut."
+    },
+    {
+      "key": "penjualanContohId",
+      "value": "",
+      "type": "string",
+      "description": "ID penjualan dari langkah Catat penjualan. Dipakai untuk detail dan pembatalan penjualan tersebut."
+    },
+    {
+      "key": "waktuDibuat",
+      "value": "",
+      "type": "string",
+      "description": "createdAt pulpen contoh. Diisi otomatis dan hanya dipakai untuk menguji timestamp; tidak perlu diisi manual."
     }
   ],
   "item": [
     {
-      "name": "01 Health",
+      "name": "0. Health Check",
       "request": {
         "method": "GET",
+        "description": "",
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/api/health",
@@ -33,7 +78,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.collectionVariables.set('suffix', Date.now().toString() + '-' + Math.floor(Math.random()*100000));"
+              "pm.collectionVariables.set('kodeContoh', Date.now().toString());"
             ]
           }
         },
@@ -43,1237 +88,930 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
+              "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
             ]
           }
         }
       ]
     },
     {
-      "name": "02 Tambah barang A",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang"
+      "name": "1. Barang - CRUD dan Error",
+      "item": [
+        {
+          "name": "1. READ - Ambil semua barang",
+          "request": {
+            "method": "GET",
+            "description": "Menampilkan barang dan menyimpan ID dua barang yang jelas namanya: Pulpen Pilot Hitam dan Buku Tulis Sinar Dunia 38. Klik Send terlebih dahulu sebelum mencoba folder Restock/Penjualan. Nilainya dapat dilihat di collection → Variables.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang?sort=terbaru&limit=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "terbaru",
+                  "description": "Urutkan barang terbaru dahulu."
+                },
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "description": "Jumlah maksimal barang yang ditampilkan."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const rows = pm.response.json().data;",
+                  "const pulpen = rows.find(item => item.nama === 'Pulpen Pilot Hitam');",
+                  "const buku = rows.find(item => item.nama === 'Buku Tulis Sinar Dunia 38');",
+                  "pm.collectionVariables.set('pulpenPilotId', pulpen ? pulpen._id : '');",
+                  "pm.collectionVariables.set('bukuTulisId', buku ? buku._id : '');",
+                  "pm.test('Pulpen Pilot dan Buku Tulis tersedia; jalankan npm run seed jika belum ada', () => { pm.expect(pulpen).to.exist; pm.expect(buku).to.exist; });"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nama\": \"Demo Pulpen {{suffix}}\",\n  \"kategori\": \"Demo\",\n  \"harga\": 3500,\n  \"stok\": 0,\n  \"stokMinimum\": 2\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.collectionVariables.set('barangA', pm.response.json().data._id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "03 Tambah barang B",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang"
+          "name": "2. READ - Cari pulpen (Query Parameter)",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang?kategori=Alat%20Tulis&q=pulpen&sort=stok",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang"
+              ],
+              "query": [
+                {
+                  "key": "kategori",
+                  "value": "Alat Tulis",
+                  "description": "Nama kategori barang yang dicari."
+                },
+                {
+                  "key": "q",
+                  "value": "pulpen",
+                  "description": "Teks nama barang yang dicari, misalnya pulpen."
+                },
+                {
+                  "key": "sort",
+                  "value": "stok",
+                  "description": "Urutkan dari stok paling sedikit."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nama\": \"Demo Buku {{suffix}}\",\n  \"kategori\": \"Demo\",\n  \"harga\": 5000,\n  \"stok\": 0,\n  \"stokMinimum\": 2\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.collectionVariables.set('barangB', pm.response.json().data._id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "04 Nama duplikat ditolak",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang"
+          "name": "3. CREATE - Tambah pulpen contoh",
+          "request": {
+            "method": "POST",
+            "description": "Membuat barang baru bernama Pulpen Presentasi + kode unik. ID hasil response disimpan sebagai pulpenContohId. Barang ini yang dipakai dalam langkah 4, 5, 6, dan 7; berbeda dari Pulpen Pilot Hitam milik data awal.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Pulpen Presentasi {{kodeContoh}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 3500,\n  \"stok\": 10,\n  \"stokMinimum\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.collectionVariables.set('pulpenContohId', pm.response.json().data._id);",
+                  "pm.collectionVariables.set('waktuDibuat', pm.response.json().data.createdAt);"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nama\": \"Demo Pulpen {{suffix}}\",\n  \"kategori\": \"Demo\",\n  \"harga\": 3500\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "05 Validasi angka negatif",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang"
+          "name": "4. READ - Detail pulpen dari langkah 3",
+          "request": {
+            "method": "GET",
+            "description": "Menampilkan pulpen contoh yang baru ditambahkan pada langkah 3. {{pulpenContohId}} berisi _id dari response CREATE. Hover variabel untuk melihat ID aslinya.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "{{pulpenContohId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nama\": \"Invalid\",\n  \"kategori\": \"Demo\",\n  \"harga\": -1\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "5. PUT - Ganti data pulpen contoh",
+          "request": {
+            "method": "PUT",
+            "description": "Mengganti nama, kategori, harga, dan stok minimum pulpen dari langkah 3. Semua 4 field harus diisi. Stok dan timestamp tidak dikirim.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "{{pulpenContohId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Pulpen Gel Presentasi {{kodeContoh}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 4500,\n  \"stokMinimum\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "06 Detail barang dan path parameter",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Stok awal nol', () => pm.expect(pm.response.json().data.stok).to.eql(0));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "07 Update data barang",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('createdAt tidak berubah', () => pm.expect(pm.response.json().data.createdAt).to.eql(pm.collectionVariables.get('waktuDibuat')));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"stokMinimum\": 3\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "08 Daftar barang dan query parameter",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang?kategori=Demo&q={{suffix}}&sort=stok&page=1&limit=10",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang"
-          ],
-          "query": [
-            {
-              "key": "kategori",
-              "value": "Demo"
+          "name": "6. PATCH - Ubah harga pulpen contoh",
+          "request": {
+            "method": "PATCH",
+            "description": "Mengubah hanya harga pulpen dari langkah 3 menjadi Rp5.000. Field lainnya tetap.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "{{pulpenContohId}}"
+              ]
             },
-            {
-              "key": "q",
-              "value": "{{suffix}}"
-            },
-            {
-              "key": "sort",
-              "value": "stok"
-            },
-            {
-              "key": "page",
-              "value": "1"
-            },
-            {
-              "key": "limit",
-              "value": "10"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"harga\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Dua barang demo ditemukan', () => pm.expect(pm.response.json().meta.total).to.eql(2));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "09 Restock banyak item",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/restock",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "restock"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{barangA}}\",\n      \"jumlah\": 5\n    },\n    {\n      \"barangId\": \"{{barangB}}\",\n      \"jumlah\": 4\n    }\n  ],\n  \"catatan\": \"Restock demo Postman\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.collectionVariables.set('restockId', pm.response.json().data._id);",
-              "pm.test('Nomor restock normal', () => pm.expect(pm.response.json().data.nomorRestock).to.match(/^RST-/));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "10 Penjualan banyak item",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
+          "name": "7. DELETE - Hapus pulpen dari langkah 3",
+          "request": {
+            "method": "DELETE",
+            "description": "Menghapus permanen pulpen contoh dari langkah 3 (namanya menjadi Pulpen Gel Presentasi setelah PUT). {{pulpenContohId}} menunjukkan ID barang tersebut. Body: none, karena DELETE memilih barang melalui ID di URL. Pulpen Pilot Hitam dan Buku Tulis data awal tidak dihapus oleh request ini.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "{{pulpenContohId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{barangA}}\",\n      \"jumlah\": 2\n    },\n    {\n      \"barangId\": \"{{barangB}}\",\n      \"jumlah\": 3\n    }\n  ],\n  \"catatan\": \"Penjualan demo Postman\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "8. ERROR - Nama kosong (400)",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 3500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.collectionVariables.set('transaksiKeluar', pm.response.json().data._id);",
-              "pm.test('Total penjualan 22000', () => pm.expect(pm.response.json().data.total).to.eql(22000));",
-              "pm.test('Memuat dua detail barang', () => pm.expect(pm.response.json().data.items).to.have.length(2));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "11 Stok otomatis setelah penjualan",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Stok A menjadi 3', () => pm.expect(pm.response.json().data.stok).to.eql(3));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "12 Stok tidak cukup membatalkan semua item",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(false));"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{barangA}}\",\n      \"jumlah\": 1\n    },\n    {\n      \"barangId\": \"{{barangB}}\",\n      \"jumlah\": 99\n    }\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "9. ERROR - Barang tidak ditemukan (404)",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "000000000000000000000000"
+              ]
             }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "13 Pastikan stok tidak berubah setelah gagal",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Stok A tetap 3', () => pm.expect(pm.response.json().data.stok).to.eql(3));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "14 Detail transaksi",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi/{{transaksiKeluar}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi",
-            "{{transaksiKeluar}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "15 Riwayat dengan filter barang jenis dan status",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi?barangId={{barangA}}&status=selesai&page=1&limit=10",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
-          ],
-          "query": [
+          },
+          "event": [
             {
-              "key": "barangId",
-              "value": "{{barangA}}"
-            },
-            {
-              "key": "status",
-              "value": "selesai"
-            },
-            {
-              "key": "page",
-              "value": "1"
-            },
-            {
-              "key": "limit",
-              "value": "10"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(false));"
+                ]
+              }
             }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Hanya satu penjualan berhasil', () => pm.expect(pm.response.json().meta.total).to.eql(1));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "16 Filter tanggal riwayat",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi?dari=2020-01-01&sampai=2099-12-31&barangId={{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
-          ],
-          "query": [
-            {
-              "key": "dari",
-              "value": "2020-01-01"
-            },
-            {
-              "key": "sampai",
-              "value": "2099-12-31"
-            },
-            {
-              "key": "barangId",
-              "value": "{{barangA}}"
-            }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "17 Stok menipis",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/stok-menipis?batas=3&page=1&limit=100",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "stok-menipis"
-          ],
-          "query": [
-            {
-              "key": "batas",
-              "value": "3"
-            },
-            {
-              "key": "page",
-              "value": "1"
-            },
-            {
-              "key": "limit",
-              "value": "100"
-            }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "18 Ketersediaan stok",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/ketersediaan",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "ketersediaan"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "19 Ringkasan inventaris",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/laporan/inventaris",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "laporan",
-            "inventaris"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "20 Laporan penjualan dan query tanggal",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/laporan/penjualan?dari=2020-01-01&sampai=2099-12-31",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "laporan",
-            "penjualan"
-          ],
-          "query": [
-            {
-              "key": "dari",
-              "value": "2020-01-01"
-            },
-            {
-              "key": "sampai",
-              "value": "2099-12-31"
-            }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Penjualan demo tercakup', () => pm.expect(pm.response.json().data.totalPenjualan).to.be.at.least(22000));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "21 Harga transaksi tidak boleh dikirim client",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{barangA}}\",\n      \"jumlah\": 1,\n      \"harga\": 1\n    }\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "10. ERROR - ID bukan ObjectId (400)",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/bukan-id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "bukan-id"
+              ]
             }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "22 Pembatalan penjualan",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi/{{transaksiKeluar}}/batal",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi",
-            "{{transaksiKeluar}}",
-            "batal"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"alasan\": \"Demo pembatalan\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Status dibatalkan', () => pm.expect(pm.response.json().data.status).to.eql('dibatalkan'));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "23 Stok pulih setelah pembatalan",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Stok A kembali 5', () => pm.expect(pm.response.json().data.stok).to.eql(5));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "24 Pembatalan dua kali ditolak",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi/{{transaksiKeluar}}/batal",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi",
-            "{{transaksiKeluar}}",
-            "batal"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"alasan\": \"Percobaan ulang\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "25 Pembatalan restock",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/restock/{{restockId}}/batal",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "restock",
-            "{{restockId}}",
-            "batal"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"alasan\": \"Selesai demonstrasi\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "26 Hapus permanen barang A",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangA}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangA}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Barang benar-benar terhapus', () => { pm.sendRequest(pm.variables.replaceIn('{{baseUrl}}/api/barang/{{barangA}}'), (error, response) => { pm.expect(error).to.not.exist; pm.expect(response.code).to.eql(404); }); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "27 Hapus permanen barang B",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/{{barangB}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "{{barangB}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
-              "pm.test('Barang benar-benar terhapus', () => { pm.sendRequest(pm.variables.replaceIn('{{baseUrl}}/api/barang/{{barangB}}'), (error, response) => { pm.expect(error).to.not.exist; pm.expect(response.code).to.eql(404); }); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "28 ID invalid ditolak",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/bukan-id",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "bukan-id"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "29 Barang tidak ditemukan",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/barang/000000000000000000000000",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "barang",
-            "000000000000000000000000"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "30 Query tanggal invalid ditolak",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/transaksi?dari=2026-02-30",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "transaksi"
-          ],
-          "query": [
+          },
+          "event": [
             {
-              "key": "dari",
-              "value": "2026-02-30"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(false));"
+                ]
+              }
             }
           ]
         }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
       ]
     },
     {
-      "name": "31 Endpoint tidak ditemukan",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/tidak-ada",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tidak-ada"
-          ]
-        }
-      },
-      "event": [
+      "name": "2. Restock",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(false); });"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "32 Riwayat restock",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/restock?barangId={{barangA}}&status=dibatalkan",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "restock"
-          ],
-          "query": [
-            {
-              "key": "barangId",
-              "value": "{{barangA}}"
+          "name": "1. POST - Restock Pulpen Pilot dan Buku Tulis",
+          "request": {
+            "method": "POST",
+            "description": "Menambah 10 Pulpen Pilot Hitam dan 5 Buku Tulis Sinar Dunia 38. pulpenPilotId/bukuTulisId diisi dari Barang → 1. READ. Jumlah berarti tambahan stok, bukan stok akhir.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/restock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "restock"
+              ]
             },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 10\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 5\n    }\n  ],\n  \"catatan\": \"Restock untuk presentasi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
             {
-              "key": "status",
-              "value": "dibatalkan"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.collectionVariables.set('restockContohId', pm.response.json().data._id);"
+                ]
+              }
             }
           ]
-        }
-      },
-      "event": [
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response berhasil', () => pm.expect(pm.response.json().success).to.eql(true));"
-            ]
-          }
+          "name": "2. GET - Riwayat restock Pulpen Pilot",
+          "request": {
+            "method": "GET",
+            "description": "Menampilkan restock selesai yang memuat Pulpen Pilot Hitam. Query barangId memakai {{pulpenPilotId}}, bukan ID barang sembarang.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/restock?status=selesai&barangId={{pulpenPilotId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "restock"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "selesai",
+                  "description": "Status riwayat yang ingin ditampilkan, misalnya selesai."
+                },
+                {
+                  "key": "barangId",
+                  "value": "{{pulpenPilotId}}",
+                  "description": "ID Pulpen Pilot Hitam; otomatis dari Barang → 1. READ semua barang."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. READ - Detail restock",
+          "request": {
+            "method": "GET",
+            "description": "Menampilkan restock contoh yang dibuat pada langkah 1 folder Restock. restockContohId adalah _id restock, bukan ID barang atau nomor RST.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/restock/{{restockContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "restock",
+                "{{restockContohId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. PATCH - Batalkan restock",
+          "request": {
+            "method": "PATCH",
+            "description": "Membatalkan restock dari langkah 1 sehingga 10 pulpen dan 5 buku dikurangi kembali. Isi alasan pada Body. Bisa gagal jika stok sudah tidak cukup.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/restock/{{restockContohId}}/batal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "restock",
+                "{{restockContohId}}",
+                "batal"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alasan\": \"Selesai contoh restock\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "33 Detail restock",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/restock/{{restockId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "restock",
-            "{{restockId}}"
+      "name": "3. Penjualan",
+      "item": [
+        {
+          "name": "1. POST - Jual 3 Pulpen Pilot dan 2 Buku Tulis",
+          "request": {
+            "method": "POST",
+            "description": "Menjual 3 Pulpen Pilot Hitam dan 2 Buku Tulis Sinar Dunia 38. Harga dan total dihitung backend. ID berasal dari Barang → 1. READ.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaksi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transaksi"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 3\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 2\n    }\n  ],\n  \"catatan\": \"Penjualan untuk presentasi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.collectionVariables.set('penjualanContohId', pm.response.json().data._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. READ - Riwayat penjualan",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaksi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transaksi"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. GET - Penjualan Pulpen Pilot (Query Parameter)",
+          "request": {
+            "method": "GET",
+            "description": "Hanya penjualan selesai yang berisi Pulpen Pilot Hitam.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaksi?status=selesai&barangId={{pulpenPilotId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transaksi"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "selesai",
+                  "description": "Status riwayat yang ingin ditampilkan, misalnya selesai."
+                },
+                {
+                  "key": "barangId",
+                  "value": "{{pulpenPilotId}}",
+                  "description": "ID Pulpen Pilot Hitam; otomatis dari Barang → 1. READ semua barang."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. READ - Detail penjualan",
+          "request": {
+            "method": "GET",
+            "description": "Menampilkan penjualan contoh dari langkah 1 folder Penjualan. penjualanContohId berisi _id response penjualan, bukan nomor TRX.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaksi/{{penjualanContohId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transaksi",
+                "{{penjualanContohId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. PATCH - Batalkan penjualan",
+          "request": {
+            "method": "PATCH",
+            "description": "Membatalkan penjualan contoh dari langkah 1 dan mengembalikan 3 pulpen serta 2 buku ke stok. Body hanya berisi alasan pembatalan.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaksi/{{penjualanContohId}}/batal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transaksi",
+                "{{penjualanContohId}}",
+                "batal"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alasan\": \"Selesai contoh penjualan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
           ]
         }
-      },
-      "event": [
+      ]
+    },
+    {
+      "name": "4. Stok dan Laporan",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response berhasil', () => pm.expect(pm.response.json().success).to.eql(true));"
-            ]
-          }
+          "name": "1. READ - Barang stok menipis",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/stok-menipis?batas=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "stok-menipis"
+              ],
+              "query": [
+                {
+                  "key": "batas",
+                  "value": "10",
+                  "description": "Batas stok menipis; nilai 10 berarti stok 10 atau kurang."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. READ - Ketersediaan stok",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/barang/ketersediaan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "barang",
+                "ketersediaan"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. READ - Laporan inventaris",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/laporan/inventaris",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "laporan",
+                "inventaris"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. READ - Laporan penjualan",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/laporan/penjualan?dari=2026-11-01&sampai=2026-11-30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "laporan",
+                "penjualan"
+              ],
+              "query": [
+                {
+                  "key": "dari",
+                  "value": "2026-11-01",
+                  "description": "Tanggal awal YYYY-MM-DD, termasuk hari tersebut (WIB)."
+                },
+                {
+                  "key": "sampai",
+                  "value": "2026-11-30",
+                  "description": "Tanggal akhir YYYY-MM-DD, termasuk hari tersebut (WIB)."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

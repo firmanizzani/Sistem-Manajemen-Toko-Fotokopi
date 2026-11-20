@@ -1,6 +1,6 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-20T13:34:33.940Z",
+  "runAt": "2026-11-20T14:03:09.924Z",
   "runner": "Newman (Postman collection)",
   "database": "Database pengujian sementara; dihapus setelah pengujian.",
   "stats": {
@@ -10,37 +10,37 @@
       "failed": 0
     },
     "items": {
-      "total": 33,
-      "pending": 0,
-      "failed": 0
-    },
-    "scripts": {
-      "total": 34,
-      "pending": 0,
-      "failed": 0
-    },
-    "prerequests": {
-      "total": 33,
-      "pending": 0,
-      "failed": 0
-    },
-    "requests": {
       "total": 35,
       "pending": 0,
       "failed": 0
     },
+    "scripts": {
+      "total": 36,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequests": {
+      "total": 35,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 37,
+      "pending": 0,
+      "failed": 0
+    },
     "tests": {
-      "total": 33,
+      "total": 35,
       "pending": 0,
       "failed": 0
     },
     "assertions": {
-      "total": 79,
+      "total": 85,
       "pending": 0,
       "failed": 0
     },
     "testScripts": {
-      "total": 33,
+      "total": 35,
       "pending": 0,
       "failed": 0
     },
@@ -147,7 +147,45 @@
       ]
     },
     {
-      "name": "07 Update data barang",
+      "name": "07 PUT Ganti data barang",
+      "method": "PUT",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Response berhasil",
+          "passed": true
+        },
+        {
+          "name": "Stok tidak ditimpa PUT",
+          "passed": true
+        },
+        {
+          "name": "Timestamp otomatis",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "08 PUT Data tidak lengkap ditolak",
+      "method": "PUT",
+      "status": 400,
+      "assertions": [
+        {
+          "name": "HTTP 400",
+          "passed": true
+        },
+        {
+          "name": "Response gagal",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "09 Update data barang",
       "method": "PATCH",
       "status": 200,
       "assertions": [
@@ -162,7 +200,7 @@
       ]
     },
     {
-      "name": "08 Daftar barang dan query parameter",
+      "name": "10 Daftar barang dan query parameter",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -181,7 +219,7 @@
       ]
     },
     {
-      "name": "09 Restock banyak item",
+      "name": "11 Restock banyak item",
       "method": "POST",
       "status": 201,
       "assertions": [
@@ -200,7 +238,7 @@
       ]
     },
     {
-      "name": "10 Penjualan banyak item",
+      "name": "12 Penjualan banyak item",
       "method": "POST",
       "status": 201,
       "assertions": [
@@ -223,7 +261,7 @@
       ]
     },
     {
-      "name": "11 Stok otomatis setelah penjualan",
+      "name": "13 Stok otomatis setelah penjualan",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -242,7 +280,7 @@
       ]
     },
     {
-      "name": "12 Stok tidak cukup membatalkan semua item",
+      "name": "14 Stok tidak cukup membatalkan semua item",
       "method": "POST",
       "status": 409,
       "assertions": [
@@ -257,7 +295,7 @@
       ]
     },
     {
-      "name": "13 Pastikan stok tidak berubah setelah gagal",
+      "name": "15 Pastikan stok tidak berubah setelah gagal",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -276,7 +314,7 @@
       ]
     },
     {
-      "name": "14 Detail transaksi",
+      "name": "16 Detail transaksi",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -291,7 +329,7 @@
       ]
     },
     {
-      "name": "15 Riwayat dengan filter barang jenis dan status",
+      "name": "17 Riwayat dengan filter barang jenis dan status",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -310,7 +348,7 @@
       ]
     },
     {
-      "name": "16 Filter tanggal riwayat",
+      "name": "18 Filter tanggal riwayat",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -325,7 +363,7 @@
       ]
     },
     {
-      "name": "17 Stok menipis",
+      "name": "19 Stok menipis",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -340,7 +378,7 @@
       ]
     },
     {
-      "name": "18 Ketersediaan stok",
+      "name": "20 Ketersediaan stok",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -355,7 +393,7 @@
       ]
     },
     {
-      "name": "19 Ringkasan inventaris",
+      "name": "21 Ringkasan inventaris",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -370,7 +408,7 @@
       ]
     },
     {
-      "name": "20 Laporan penjualan dan query tanggal",
+      "name": "22 Laporan penjualan dan query tanggal",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -389,7 +427,7 @@
       ]
     },
     {
-      "name": "21 Harga transaksi tidak boleh dikirim client",
+      "name": "23 Harga transaksi tidak boleh dikirim client",
       "method": "POST",
       "status": 400,
       "assertions": [
@@ -404,7 +442,7 @@
       ]
     },
     {
-      "name": "22 Pembatalan penjualan",
+      "name": "24 Pembatalan penjualan",
       "method": "PATCH",
       "status": 200,
       "assertions": [
@@ -423,7 +461,7 @@
       ]
     },
     {
-      "name": "23 Stok pulih setelah pembatalan",
+      "name": "25 Stok pulih setelah pembatalan",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -442,7 +480,7 @@
       ]
     },
     {
-      "name": "24 Pembatalan dua kali ditolak",
+      "name": "26 Pembatalan dua kali ditolak",
       "method": "PATCH",
       "status": 409,
       "assertions": [
@@ -457,7 +495,7 @@
       ]
     },
     {
-      "name": "25 Pembatalan restock",
+      "name": "27 Pembatalan restock",
       "method": "PATCH",
       "status": 200,
       "assertions": [
@@ -472,7 +510,7 @@
       ]
     },
     {
-      "name": "26 Hapus permanen barang A",
+      "name": "28 Hapus permanen barang A",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -491,7 +529,7 @@
       ]
     },
     {
-      "name": "26 Hapus permanen barang A",
+      "name": "28 Hapus permanen barang A",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -510,7 +548,7 @@
       ]
     },
     {
-      "name": "27 Hapus permanen barang B",
+      "name": "29 Hapus permanen barang B",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -529,7 +567,7 @@
       ]
     },
     {
-      "name": "27 Hapus permanen barang B",
+      "name": "29 Hapus permanen barang B",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -548,7 +586,7 @@
       ]
     },
     {
-      "name": "28 ID invalid ditolak",
+      "name": "30 ID invalid ditolak",
       "method": "GET",
       "status": 400,
       "assertions": [
@@ -563,7 +601,7 @@
       ]
     },
     {
-      "name": "29 Barang tidak ditemukan",
+      "name": "31 Barang tidak ditemukan",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -578,7 +616,7 @@
       ]
     },
     {
-      "name": "30 Query tanggal invalid ditolak",
+      "name": "32 Query tanggal invalid ditolak",
       "method": "GET",
       "status": 400,
       "assertions": [
@@ -593,7 +631,7 @@
       ]
     },
     {
-      "name": "31 Endpoint tidak ditemukan",
+      "name": "33 Endpoint tidak ditemukan",
       "method": "GET",
       "status": 404,
       "assertions": [
@@ -608,7 +646,7 @@
       ]
     },
     {
-      "name": "32 Riwayat restock",
+      "name": "34 Riwayat restock",
       "method": "GET",
       "status": 200,
       "assertions": [
@@ -623,7 +661,7 @@
       ]
     },
     {
-      "name": "33 Detail restock",
+      "name": "35 Detail restock",
       "method": "GET",
       "status": 200,
       "assertions": [

@@ -17,7 +17,7 @@ try {
   await Promise.all([Barang.init(), Transaksi.init(), Restock.init()]);
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  const collection = JSON.parse(await readFile(new URL('../postman/sistem-manajemen-toko-fotokopi.postman_collection.json', import.meta.url), 'utf8'));
+  const collection = JSON.parse(await readFile(new URL('./api.postman_collection.json', import.meta.url), 'utf8'));
   const summary = await new Promise((resolve, reject) => {
     newman.run({ collection, reporters: ['cli'],
       envVar: [{ key: 'baseUrl', value: `http://127.0.0.1:${server.address().port}` }],

@@ -7,6 +7,7 @@ router.get('/ketersediaan', controller.availability);
 router.get('/', controller.listBarang);
 router.get('/:id', controller.getBarang);
 router.post('/', controller.createBarang);
+router.put('/:id', controller.replaceBarang);
 router.patch('/:id', controller.updateBarang);
 router.delete('/:id', controller.deleteBarang);
 

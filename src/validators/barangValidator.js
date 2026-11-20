@@ -24,3 +24,14 @@ export function validateUpdateBarang(body) {
   }
   return update;
 }
+
+// Penggantian barang
+export function validateReplaceBarang(body) {
+  validateBody(body, ['nama', 'kategori', 'harga', 'stokMinimum']);
+  return {
+    nama: validateText(body.nama, 'nama'),
+    kategori: validateText(body.kategori, 'kategori', 80),
+    harga: validateInteger(body.harga, 'harga'),
+    stokMinimum: validateInteger(body.stokMinimum, 'stokMinimum')
+  };
+}

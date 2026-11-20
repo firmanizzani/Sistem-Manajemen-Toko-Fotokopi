@@ -14,9 +14,10 @@ try {
     added = 0;
     // Tambahkan baru
     for (const item of items) {
+      const waktu = new Date();
       const result = await Barang.updateOne({ namaKunci: namaKunci(item.nama) }, {
-        $setOnInsert: { ...item, namaKunci: namaKunci(item.nama), aktif: true }
-      }, { upsert: true, session });
+        $setOnInsert: { ...item, namaKunci: namaKunci(item.nama), aktif: true, createdAt: waktu, updatedAt: waktu }
+      }, { upsert: true, session, timestamps: false });
       added += result.upsertedCount;
     }
   });

@@ -1,7 +1,7 @@
 import Barang, { namaKunci } from '../models/Barang.js';
 import AppError from '../utils/AppError.js';
 import { validateText, validateId, validateQuery, readQueryInteger } from '../validators/commonValidator.js';
-import { validateCreateBarang, validateUpdateBarang } from '../validators/barangValidator.js';
+import { validateCreateBarang, validateUpdateBarang, validateReplaceBarang } from '../validators/barangValidator.js';
 import { getPagination, escapeRegex } from '../utils/queryHelpers.js';
 
 // Tambah barang
@@ -51,14 +51,22 @@ export async function updateBarang(barangId, body) {
   return data;
 }
 
+// Ganti barang
+export async function replaceBarang(barangId, body) {
+  const input = validateReplaceBarang(body);
+  const data = await Barang.findOneAndUpdate(
+    { _id: validateId(barangId), aktif: true },
+    { ...input, namaKunci: namaKunci(input.nama) },
+    { returnDocument: 'after', runValidators: true }
+  );
+  if (!data) throw new AppError(404, 'Barang aktif tidak ditemukan.');
+  return data;
+}
+
 // Hapus barang
 export async function deleteBarang(barangId) {
-  const data = await Barang.findOneAndDelete({ _id: validateId(barangId), stok: 0 });
-  if (!data) {
-    const existing = await Barang.findById(barangId);
-    if (!existing) throw new AppError(404, 'Barang tidak ditemukan.');
-    throw new AppError(409, 'Barang hanya dapat dihapus ketika stok nol.');
-  }
+  const data = await Barang.findByIdAndDelete(validateId(barangId));
+  if (!data) throw new AppError(404, 'Barang tidak ditemukan.');
   return data;
 }
 

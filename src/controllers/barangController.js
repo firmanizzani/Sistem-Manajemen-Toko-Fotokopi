@@ -40,6 +40,16 @@ export async function updateBarang(req, res, next) {
   }
 }
 
+// Ganti barang
+export async function replaceBarang(req, res, next) {
+  try {
+    const data = await barangService.replaceBarang(req.params.id, req.body);
+    res.status(200).json({ success: true, message: 'Data barang berhasil diganti.', data });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Hapus barang
 export async function deleteBarang(req, res, next) {
   try {

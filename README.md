@@ -1,24 +1,26 @@
 # Sistem Manajemen Toko Fotokopi
 
-REST API untuk mengelola barang, stok, dan transaksi toko fotokopi. Final Project Backend Basic KSM Veterantech UPNVJ 2026.
+REST API untuk mengelola barang, stok, penjualan, dan restock. Final Project Backend Basic KSM Veterantech UPNVJ 2026.
 
 ## Fitur
 
-- CRUD barang, validasi input, dan pencegahan nama duplikat.
-- Pencarian, filter kategori, stok menipis, dan pemeriksaan stok habis.
-- Penjualan dengan beberapa barang sekaligus dan restock terpisah.
-- Perubahan stok otomatis, riwayat transaksi, dan pembatalan.
-- Laporan nilai inventaris dan total penjualan.
-
-Collection `barang` menyimpan stok, `transaksi` khusus penjualan pelanggan, dan `restock` khusus riwayat barang masuk. Nomor penjualan memakai awalan `TRX-`, sedangkan restock memakai `RST-`.
+- CRUD barang melalui GET, POST, PUT, PATCH, dan DELETE, dengan validasi input serta pencegahan nama duplikat.
+- Pencarian nama, filter kategori/stok, pengurutan, dan pagination.
+- Pemeriksaan stok menipis, barang habis, dan ketersediaan stok.
+- Penjualan beberapa barang sekaligus, dengan perhitungan total dan pengurangan stok otomatis.
+- Restock barang dengan penambahan stok otomatis dan riwayat tersendiri.
+- Riwayat penjualan/restock yang dapat difilter berdasarkan tanggal, status, dan barang.
+- Pembatalan penjualan/restock dengan pengembalian perubahan stok.
+- Laporan jumlah jenis barang, total unit, dan estimasi nilai inventaris.
+- Laporan total penjualan, jumlah unit terjual, dan rekap harian.
 
 ## Teknologi
 
-Node.js >=20.19, ExpressJS, MongoDB, Mongoose, dan dotenv. Pengujian menggunakan Supertest, Node Test Runner, serta Newman/Postman.
+Node.js >=20.19, ExpressJS, MongoDB, Mongoose, dan dotenv. Pengujian: Supertest, Node Test Runner, serta Newman/Postman.
 
-## Menjalankan proyek
+## Menjalankan
 
-Pastikan Node.js dan MongoDB Server sudah terpasang. Jalankan dari folder **Finalproject**:
+Pastikan service MongoDB aktif pada port **27017** dengan replica set **rsFotokopi**. Jalankan dari folder **Finalproject**:
 
 ```powershell
 npm ci
@@ -26,69 +28,47 @@ Copy-Item .env.example .env
 npm start
 ```
 
-Salin `.env` hanya pada instalasi pertama. API berjalan di `http://127.0.0.1:3000`. MongoDB menggunakan Windows Service lokal di port **27017**, dengan replica set `rsFotokopi` agar transaksi stok konsisten. Service otomatis berjalan saat Windows menyala.
+Salin `.env` hanya saat instalasi pertama. API: `http://127.0.0.1:3000`.
 
-Opsional: jalankan `npm run seed` untuk mengisi **15 barang contoh** dari `data/barang-awal.json`. File ini hanya untuk pengisian awal; API menggunakan MongoDB. Seed ulang tidak menimpa barang yang sudah ada.
-
-Setelah barang tersedia, `npm run seed:transaksi` mengisi **3 penjualan contoh** (2 selesai, 1 dibatalkan) dan **2 restock**, sekaligus menyesuaikan stok. Menjalankannya ulang tidak menggandakan contoh yang sama.
-
-Hentikan API dengan Ctrl+C. MongoDB tetap berjalan sebagai service; biasanya cukup jalankan `npm start` saat ingin memakai API lagi.
-
-## Struktur kode
-
-- `src/server.js`: koneksi database dan menjalankan server.
-- `src/app.js`: konfigurasi Express dan pemasangan routes.
-- `src/routes/`: daftar URL dan HTTP method.
-- `src/controllers/`: menerima request dan mengirim response.
-- `src/services/`: logika barang, penjualan, restock, dan laporan.
-- `src/models/`: bentuk data dalam MongoDB.
-- `src/config/`: konfigurasi koneksi database.
-- `src/middlewares/`: pemeriksaan JSON, endpoint hilang, dan penanganan error.
-- `src/validators/`: pemeriksaan input barang dan transaksi.
-- `src/utils/`: status error serta fungsi pendukung query.
-
-Contoh alur: `POST /api/barang` → routes → controller → service → validator/model → response.
+Data contoh opsional: jalankan `npm run seed`, lalu `npm run seed:transaksi`. Perintah ini mengisi 15 barang, 3 penjualan, dan 2 restock tanpa menggandakan contoh yang sudah ada.
 
 ## Endpoint API
 
 | Method | Endpoint | Fungsi |
 | --- | --- | --- |
-| GET | `/api/health` | Cek koneksi database |
-| POST | `/api/barang` | Tambah barang |
+| GET | `/api/health` | Cek koneksi |
 | GET | `/api/barang` | Daftar, pencarian, dan filter barang |
-| GET | `/api/barang/stok-menipis` | Daftar stok menipis |
-| GET | `/api/barang/ketersediaan` | Cek ketersediaan stok |
+| POST | `/api/barang` | Tambah barang |
 | GET | `/api/barang/:id` | Detail barang |
-| PATCH | `/api/barang/:id` | Ubah data barang |
-| DELETE | `/api/barang/:id` | Hapus permanen barang dengan stok nol |
-| POST | `/api/transaksi` | Catat penjualan pelanggan |
+| PUT | `/api/barang/:id` | Ganti nama, kategori, harga, dan stok minimum |
+| PATCH | `/api/barang/:id` | Ubah sebagian data barang |
+| DELETE | `/api/barang/:id` | Hapus permanen barang |
+| GET | `/api/barang/stok-menipis` | Stok menipis |
+| GET | `/api/barang/ketersediaan` | Ketersediaan stok |
+| POST | `/api/transaksi` | Catat penjualan |
 | GET | `/api/transaksi` | Riwayat penjualan |
-| GET | `/api/transaksi/:id` | Detail transaksi |
-| PATCH | `/api/transaksi/:id/batal` | Batalkan transaksi dan pulihkan stok |
-| POST | `/api/restock` | Catat barang masuk dan tambah stok |
+| GET | `/api/transaksi/:id` | Detail penjualan |
+| PATCH | `/api/transaksi/:id/batal` | Batalkan penjualan dan kembalikan stok |
+| POST | `/api/restock` | Tambah stok |
 | GET | `/api/restock` | Riwayat restock |
 | GET | `/api/restock/:id` | Detail restock |
 | PATCH | `/api/restock/:id/batal` | Batalkan restock jika stok masih cukup |
-| GET | `/api/laporan/inventaris` | Ringkasan stok dan nilai inventaris |
+| GET | `/api/laporan/inventaris` | Ringkasan inventaris |
 | GET | `/api/laporan/penjualan` | Total penjualan dan rekap harian |
 
-Body POST/PATCH menggunakan JSON. Stok setelah pembuatan barang diubah melalui penjualan, restock, dan pembatalan. Detail barang disimpan dalam array `items`; body penjualan/restock cukup berisi `items` dan `catatan` opsional, tanpa `jenis`.
-
-PATCH barang cukup berisi field yang diubah, misalnya `{ "harga": 5000 }`.
-
-DELETE menghapus barang dari MongoDB, sedangkan riwayat transaksinya tetap tersimpan. Transaksi yang melibatkan barang yang sudah dihapus tidak dapat dibatalkan. Selesaikan koreksi transaksi sebelum menghapus barang.
+Body POST/PUT/PATCH menggunakan JSON. Stok berubah melalui penjualan, restock, dan pembatalan. Timestamp barang diisi otomatis. Riwayat tetap tersimpan setelah barang dihapus, tetapi transaksi terkait tidak dapat dibatalkan lagi.
 
 ## Pengujian
 
-Dengan service MongoDB aktif:
+Import [collection presentasi](postman/sistem-manajemen-toko-fotokopi.postman_collection.json) ke Postman. Mulai dari **0. Health Check**, lalu ikuti urutan request. Contoh body dan keterangan variabel tersedia di collection.
+
+Pengujian otomatis:
 
 ```powershell
 npm test
 npm run test:postman
 ```
 
-Untuk Postman, import [collection ini](postman/sistem-manajemen-toko-fotokopi.postman_collection.json) dan jalankan berurutan. Hasil terakhir: **23 test integrasi dan 79 assertion Postman lulus**.
-
-Contoh request tersedia di collection Postman. Bukti pengujian otomatis tersimpan di [hasil pengujian](postman/hasil-pengujian.json). Query barang: `q`, `kategori`, `stokMaks`; query riwayat penjualan/restock: `status`, `barangId`, `dari`, `sampai` (tanggal `YYYY-MM-DD`, WIB).
+Hasil terakhir: **24 test integrasi dan 85 assertion lulus**. [Bukti pengujian](postman/hasil-pengujian.json).
 
 **Author:** Muhammad Firman Izzani (2510512069).
