@@ -2,22 +2,21 @@ import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
-import { HttpError } from '../utils/http.js';
-import { object, text, integer, id, fail } from '../utils/validation.js';
+import { HttpError, validateBody, validateText, validateInteger, validateId, validateQuery, getDateFilter, getPagination, fail } from './validation.js';
 
 function validateTransaksi(body) {
-  object(body, ['jenis', 'items', 'catatan']);
+  validateBody(body, ['jenis', 'items', 'catatan']);
   if (!['masuk', 'keluar'].includes(body.jenis)) fail('jenis harus masuk atau keluar.');
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) fail('items harus berisi 1–50 barang.');
   const seen = new Set();
   const items = body.items.map((item) => {
-    object(item, ['barangId', 'jumlah']);
-    const barangId = id(item.barangId, 'barangId').toLowerCase();
+    validateBody(item, ['barangId', 'jumlah']);
+    const barangId = validateId(item.barangId, 'barangId').toLowerCase();
     if (seen.has(barangId)) fail('Barang yang sama tidak boleh berulang dalam satu transaksi; gabungkan jumlahnya.');
     seen.add(barangId);
-    return { barangId, jumlah: integer(item.jumlah, 'jumlah', 1, 1_000_000) };
+    return { barangId, jumlah: validateInteger(item.jumlah, 'jumlah', 1, 1_000_000) };
   });
-  const catatan = body.catatan === undefined ? '' : text(body.catatan, 'catatan', 500);
+  const catatan = body.catatan === undefined ? '' : validateText(body.catatan, 'catatan', 500);
   return { jenis: body.jenis, items, catatan };
 }
 
@@ -49,9 +48,9 @@ export async function createTransaksi(body) {
 }
 
 export async function cancelTransaksi(transaksiId, body) {
-  id(transaksiId);
-  object(body, ['alasan']);
-  const alasan = text(body.alasan, 'alasan', 500);
+  validateId(transaksiId);
+  validateBody(body, ['alasan']);
+  const alasan = validateText(body.alasan, 'alasan', 500);
   return mongoose.connection.transaction(async (session) => {
     const transaksi = await Transaksi.findById(transaksiId).session(session);
     if (!transaksi) throw new HttpError(404, 'Transaksi tidak ditemukan.');
@@ -70,4 +69,29 @@ export async function cancelTransaksi(transaksiId, body) {
     await transaksi.save({ session });
     return transaksi;
   }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
+}
+
+export async function listTransaksi(query) {
+  validateQuery(query, ['jenis', 'status', 'barangId', 'dari', 'sampai', 'page', 'limit']);
+  const filter = getDateFilter(query);
+  if (query.jenis !== undefined) {
+    if (!['masuk', 'keluar'].includes(query.jenis)) fail('jenis harus masuk atau keluar.');
+    filter.jenis = query.jenis;
+  }
+  if (query.status !== undefined) {
+    if (!['selesai', 'dibatalkan'].includes(query.status)) fail('status harus selesai atau dibatalkan.');
+    filter.status = query.status;
+  }
+  if (query.barangId !== undefined) filter['items.barangId'] = validateId(query.barangId, 'barangId');
+  const { page, limit, skip } = getPagination(query);
+  const [data, total] = await Promise.all([
+    Transaksi.find(filter).sort({ tanggal: -1, _id: -1 }).skip(skip).limit(limit), Transaksi.countDocuments(filter)
+  ]);
+  return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+}
+
+export async function getTransaksi(transaksiId) {
+  const data = await Transaksi.findById(validateId(transaksiId));
+  if (!data) throw new HttpError(404, 'Transaksi tidak ditemukan.');
+  return data;
 }

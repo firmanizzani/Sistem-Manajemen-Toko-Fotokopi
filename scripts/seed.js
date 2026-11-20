@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { readFile } from 'node:fs/promises';
 import mongoose from 'mongoose';
-import { connectDatabase } from '../src/config/database.js';
-import Barang, { namaKunci } from '../src/models/Barang.js';
+import { connectDatabase } from '../config/database.js';
+import Barang, { namaKunci } from '../models/Barang.js';
 
 try {
   await connectDatabase();

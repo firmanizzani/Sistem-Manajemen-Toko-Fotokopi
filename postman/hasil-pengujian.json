@@ -1,6 +1,6 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-20T12:06:06.644Z",
+  "runAt": "2026-11-20T12:15:21.565Z",
   "runner": "Newman (Postman collection)",
   "database": "Database pengujian sementara; dihapus setelah pengujian.",
   "stats": {

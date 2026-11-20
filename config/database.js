@@ -6,6 +6,6 @@ export async function connectDatabase(uri = process.env.MONGODB_URI) {
   const hello = await mongoose.connection.db.admin().command({ hello: 1 });
   if (!hello.setName && hello.msg !== 'isdbgrid') {
     await mongoose.disconnect();
-    throw new Error('Transaksi stok membutuhkan replica set. Jalankan npm run db:start dan gunakan URI di .env.example.');
+    throw new Error('Transaksi stok membutuhkan replica set. Pastikan service MongoDB memakai replica set rsFotokopi dan gunakan URI di .env.example.');
   }
 }

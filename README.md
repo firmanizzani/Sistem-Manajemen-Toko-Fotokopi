@@ -21,15 +21,25 @@ Pastikan Node.js dan MongoDB Server sudah terpasang. Jalankan dari folder **Fina
 ```powershell
 npm ci
 Copy-Item .env.example .env
-npm run db:start
 npm start
 ```
 
-Salin `.env` hanya pada instalasi pertama. API berjalan di `http://127.0.0.1:3000`. MongoDB menggunakan Windows Service lokal di port **27017**, dengan replica set `rsFotokopi` agar transaksi stok konsisten. Service otomatis berjalan saat Windows menyala; `npm run db:start` dapat dipakai untuk mengecek/menyalakannya.
+Salin `.env` hanya pada instalasi pertama. API berjalan di `http://127.0.0.1:3000`. MongoDB menggunakan Windows Service lokal di port **27017**, dengan replica set `rsFotokopi` agar transaksi stok konsisten. Service otomatis berjalan saat Windows menyala.
 
 Opsional: jalankan `npm run seed` untuk mengisi **15 barang contoh** dari `data/barang-awal.json`. File ini hanya untuk pengisian awal; API menggunakan MongoDB. Seed ulang tidak menimpa barang yang sudah ada.
 
 Hentikan API dengan Ctrl+C. MongoDB tetap berjalan sebagai service; biasanya cukup jalankan `npm start` saat ingin memakai API lagi.
+
+## Struktur kode
+
+- `index.js`: server Express dan penanganan error.
+- `routes/`: daftar URL dan HTTP method.
+- `controllers/`: menerima request dan mengirim response.
+- `services/`: logika barang, transaksi, dan laporan; validasi berulang ada di satu file `validation.js`.
+- `models/`: bentuk data barang dan transaksi di MongoDB.
+- `config/database.js`: koneksi MongoDB.
+
+Contoh alur: `POST /api/barang` → `barangRoutes.js` → `barangController.js` → `barangService.js` → model `Barang`.
 
 ## Endpoint API
 
