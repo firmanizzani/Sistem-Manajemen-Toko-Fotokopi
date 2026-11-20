@@ -1,0 +1,67 @@
+import mongoose from 'mongoose';
+import { HttpError } from './http.js';
+
+export function fail(message) { throw new HttpError(400, message); }
+
+export function object(value, allowed) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) fail('Body harus berupa object JSON.');
+  const unknown = Object.keys(value).filter((key) => !allowed.includes(key));
+  if (unknown.length) fail(`Field tidak dikenal: ${unknown.join(', ')}.`);
+}
+
+export function text(value, label, max = 120) {
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > max) {
+    fail(`${label} wajib berupa teks berisi 1–${max} karakter.`);
+  }
+  return value.trim();
+}
+
+export function integer(value, label, min = 0, max = 1_000_000_000) {
+  if (!Number.isSafeInteger(value) || value < min || value > max) {
+    fail(`${label} harus bilangan bulat antara ${min} dan ${max}.`);
+  }
+  return value;
+}
+
+export function id(value, label = 'ID') {
+  if (typeof value !== 'string' || !mongoose.isObjectIdOrHexString(value)) fail(`${label} tidak valid.`);
+  return value;
+}
+
+export function queryFields(query, allowed) {
+  object(query, allowed);
+  for (const value of Object.values(query)) {
+    if (typeof value !== 'string') fail('Setiap query parameter harus berisi satu nilai teks.');
+  }
+}
+
+export function queryInt(value, label, fallback, min = 0, max = 1_000_000_000) {
+  if (value === undefined) return fallback;
+  if (!/^\d+$/.test(value)) fail(`${label} harus berupa bilangan bulat.`);
+  return integer(Number(value), label, min, max);
+}
+
+export function pagination(query) {
+  const page = queryInt(query.page, 'page', 1, 1, 1_000_000);
+  const limit = queryInt(query.limit, 'limit', 20, 1, 100);
+  return { page, limit, skip: (page - 1) * limit };
+}
+
+export const metadata = (page, limit, total) => ({ page, limit, total, totalPages: Math.ceil(total / limit) });
+
+export function dateFilter(query) {
+  const range = {};
+  for (const [key, operator] of [['dari', '$gte'], ['sampai', '$lt']]) {
+    if (query[key] === undefined) continue;
+    const value = query[key];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) fail(`${key} harus berformat YYYY-MM-DD.`);
+    const utc = new Date(`${value}T00:00:00.000Z`);
+    if (!Number.isFinite(utc.getTime()) || utc.toISOString().slice(0, 10) !== value) fail(`${key} tidak valid.`);
+    const start = new Date(`${value}T00:00:00.000+07:00`);
+    range[operator] = key === 'sampai' ? new Date(start.getTime() + 86400000) : start;
+  }
+  if (range.$gte && range.$lt && range.$gte >= range.$lt) fail('dari tidak boleh melewati sampai.');
+  return Object.keys(range).length ? { tanggal: range } : {};
+}
+
+export function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }

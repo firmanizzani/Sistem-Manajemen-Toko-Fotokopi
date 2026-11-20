@@ -1,0 +1,17 @@
+[
+  { "nama": "Pulpen Pilot Hitam", "kategori": "Alat Tulis", "stok": 50, "harga": 3500, "stokMinimum": 10 },
+  { "nama": "Pensil 2B Faber-Castell", "kategori": "Alat Tulis", "stok": 40, "harga": 4000, "stokMinimum": 10 },
+  { "nama": "Rautan Pensil Putar", "kategori": "Aksesoris", "stok": 15, "harga": 12000, "stokMinimum": 5 },
+  { "nama": "Penghapus Joyko Putih", "kategori": "Alat Tulis", "stok": 30, "harga": 2000, "stokMinimum": 10 },
+  { "nama": "Buku Tulis Sinar Dunia 38", "kategori": "Kertas & Buku", "stok": 60, "harga": 5000, "stokMinimum": 10 },
+  { "nama": "Gunting Kertas Joyko", "kategori": "Peralatan", "stok": 12, "harga": 8000, "stokMinimum": 5 },
+  { "nama": "Stabilo Boss Kuning", "kategori": "Alat Tulis", "stok": 8, "harga": 9500, "stokMinimum": 10 },
+  { "nama": "Spidol Biru", "kategori": "Alat Tulis", "stok": 17, "harga": 9000, "stokMinimum": 10 },
+  { "nama": "Kertas HVS A4 80 gsm (Rim)", "kategori": "Kertas & Buku", "stok": 20, "harga": 65000, "stokMinimum": 5 },
+  { "nama": "Kertas HVS F4 70 gsm (Rim)", "kategori": "Kertas & Buku", "stok": 4, "harga": 60000, "stokMinimum": 5 },
+  { "nama": "Map Plastik Kancing", "kategori": "Aksesoris", "stok": 35, "harga": 4000, "stokMinimum": 10 },
+  { "nama": "Stapler Joyko", "kategori": "Peralatan", "stok": 10, "harga": 18000, "stokMinimum": 3 },
+  { "nama": "Isi Staples No. 10 (Kotak)", "kategori": "Peralatan", "stok": 25, "harga": 3000, "stokMinimum": 5 },
+  { "nama": "Lem Kertas Stick", "kategori": "Alat Tulis", "stok": 6, "harga": 5000, "stokMinimum": 10 },
+  { "nama": "Amplop Putih (Pak)", "kategori": "Aksesoris", "stok": 0, "harga": 15000, "stokMinimum": 5 }
+]
