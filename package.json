@@ -7,7 +7,6 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:start": "node scripts/local-db.js start",
-    "db:stop": "node scripts/local-db.js stop",
     "seed": "node scripts/seed.js",
     "test": "node --test --test-concurrency=1 tests/api.test.js",
     "test:postman": "node scripts/test-postman.js"
@@ -16,7 +15,9 @@
   "author": "Muhammad Firman Izzani",
   "license": "ISC",
   "type": "module",
-  "engines": { "node": ">=20.19.0" },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "dotenv": "^18.0.10",
     "express": "^5.3.0",

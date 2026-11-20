@@ -8,7 +8,7 @@ import Barang from '../src/models/Barang.js';
 import Transaksi from '../src/models/Transaksi.js';
 
 const databaseName = `fotokopi_test_${Date.now()}_${process.pid}`;
-const baseUri = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27018/?replicaSet=rsFotokopi&directConnection=true';
+const baseUri = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/?replicaSet=rsFotokopi&directConnection=true';
 const uri = new URL(baseUri);
 uri.pathname = `/${databaseName}`;
 const api = request(app);

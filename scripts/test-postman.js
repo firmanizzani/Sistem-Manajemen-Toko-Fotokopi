@@ -8,7 +8,7 @@ import Barang from '../src/models/Barang.js';
 import Transaksi from '../src/models/Transaksi.js';
 
 const databaseName = `fotokopi_postman_${Date.now()}_${process.pid}`;
-const uri = new URL(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27018/?replicaSet=rsFotokopi&directConnection=true');
+const uri = new URL(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/?replicaSet=rsFotokopi&directConnection=true');
 uri.pathname = `/${databaseName}`;
 let server;
 try {
@@ -34,8 +34,8 @@ try {
       assertions: entry.assertions?.map((a) => ({ name: a.assertion, passed: !a.error })) ?? []
     }))
   };
-  await mkdir(new URL('../docs/', import.meta.url), { recursive: true });
-  await writeFile(new URL('../docs/hasil-postman.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+  await mkdir(new URL('../postman/', import.meta.url), { recursive: true });
+  await writeFile(new URL('../postman/hasil-pengujian.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
   if (summary.run.failures.length) process.exitCode = 1;
 } catch (error) { console.error(error); process.exitCode = 1; }
 finally {
