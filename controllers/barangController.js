@@ -1,5 +1,6 @@
 import * as barangService from '../services/barangService.js';
 
+// Tambah barang
 export async function createBarang(req, res, next) {
   try {
     const data = await barangService.createBarang(req.body);
@@ -9,6 +10,7 @@ export async function createBarang(req, res, next) {
   }
 }
 
+// Daftar barang
 export async function listBarang(req, res, next) {
   try {
     const { data, meta } = await barangService.listBarang(req.query);
@@ -18,6 +20,7 @@ export async function listBarang(req, res, next) {
   }
 }
 
+// Detail barang
 export async function getBarang(req, res, next) {
   try {
     const data = await barangService.getBarang(req.params.id);
@@ -27,6 +30,7 @@ export async function getBarang(req, res, next) {
   }
 }
 
+// Ubah barang
 export async function updateBarang(req, res, next) {
   try {
     const data = await barangService.updateBarang(req.params.id, req.body);
@@ -36,15 +40,17 @@ export async function updateBarang(req, res, next) {
   }
 }
 
+// Hapus barang
 export async function deleteBarang(req, res, next) {
   try {
     const data = await barangService.deleteBarang(req.params.id);
-    res.status(200).json({ success: true, message: 'Barang diarsipkan; riwayat tetap tersimpan.', data });
+    res.status(200).json({ success: true, message: 'Barang dihapus permanen; riwayat transaksi tetap tersimpan.', data });
   } catch (error) {
     next(error);
   }
 }
 
+// Stok menipis
 export async function lowStock(req, res, next) {
   try {
     const { data, meta } = await barangService.lowStock(req.query);
@@ -54,6 +60,7 @@ export async function lowStock(req, res, next) {
   }
 }
 
+// Ketersediaan stok
 export async function availability(req, res, next) {
   try {
     const data = await barangService.availability(req.query);

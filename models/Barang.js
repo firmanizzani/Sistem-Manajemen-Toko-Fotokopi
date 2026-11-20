@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Struktur barang
 const barangSchema = new mongoose.Schema({
   nama: { type: String, required: true, trim: true, maxlength: 120 },
   namaKunci: { type: String, required: true, unique: true, select: false },
@@ -10,5 +11,6 @@ const barangSchema = new mongoose.Schema({
   aktif: { type: Boolean, default: true }
 }, { timestamps: true, collection: 'barang', versionKey: false });
 
+// Standarkan nama
 export const namaKunci = (nama) => nama.trim().replace(/\s+/g, ' ').toLowerCase();
 export default mongoose.model('Barang', barangSchema);

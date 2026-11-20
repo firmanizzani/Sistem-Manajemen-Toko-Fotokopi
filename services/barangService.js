@@ -1,6 +1,7 @@
 import Barang, { namaKunci } from '../models/Barang.js';
 import { HttpError, validateBody, validateText, validateInteger, validateId, validateQuery, readQueryInteger, getPagination, escapeRegex } from './validation.js';
 
+// Tambah barang
 export async function createBarang(body) {
   validateBody(body, ['nama', 'kategori', 'harga', 'stok', 'stokMinimum']);
   const nama = validateText(body.nama, 'nama');
@@ -16,6 +17,7 @@ export async function createBarang(body) {
   return result;
 }
 
+// Filter barang
 export async function listBarang(query) {
   validateQuery(query, ['q', 'kategori', 'stokMaks', 'aktif', 'sort', 'page', 'limit']);
   const filter = { aktif: true };
@@ -26,6 +28,7 @@ export async function listBarang(query) {
   if (query.q !== undefined) filter.nama = { $regex: escapeRegex(validateText(query.q, 'q')), $options: 'i' };
   if (query.kategori !== undefined) filter.kategori = validateText(query.kategori, 'kategori', 80);
   if (query.stokMaks !== undefined) filter.stok = { $lte: readQueryInteger(query.stokMaks, 'stokMaks') };
+  // Urutkan data
   const sorts = { nama: { nama: 1, _id: 1 }, stok: { stok: 1, _id: 1 }, '-stok': { stok: -1, _id: -1 }, terbaru: { createdAt: -1, _id: -1 } };
   const sort = query.sort ?? 'nama';
   if (!Object.hasOwn(sorts, sort)) throw new HttpError(400, 'sort harus nama, stok, -stok, atau terbaru.');
@@ -36,12 +39,14 @@ export async function listBarang(query) {
   return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
 }
 
+// Cari barang
 export async function getBarang(barangId) {
   const data = await Barang.findById(validateId(barangId));
   if (!data) throw new HttpError(404, 'Barang tidak ditemukan.');
   return data;
 }
 
+// Ubah barang
 export async function updateBarang(barangId, body) {
   validateBody(body, ['nama', 'kategori', 'harga', 'stokMinimum']);
   if (!Object.keys(body).length) throw new HttpError(400, 'Isi minimal satu field yang ingin diperbarui.');
@@ -61,17 +66,18 @@ export async function updateBarang(barangId, body) {
   return data;
 }
 
+// Hapus barang
 export async function deleteBarang(barangId) {
-  // Arsip mempertahankan referensi riwayat dan hanya boleh dilakukan saat stok nol.
-  const data = await Barang.findOneAndUpdate({ _id: validateId(barangId), aktif: true, stok: 0 }, { aktif: false }, { returnDocument: 'after' });
+  const data = await Barang.findOneAndDelete({ _id: validateId(barangId), stok: 0 });
   if (!data) {
     const existing = await Barang.findById(barangId);
-    if (!existing || !existing.aktif) throw new HttpError(404, 'Barang aktif tidak ditemukan.');
-    throw new HttpError(409, 'Barang hanya dapat dihapus/diarsipkan ketika stok nol.');
+    if (!existing) throw new HttpError(404, 'Barang tidak ditemukan.');
+    throw new HttpError(409, 'Barang hanya dapat dihapus ketika stok nol.');
   }
   return data;
 }
 
+// Stok menipis
 export async function lowStock(query) {
   validateQuery(query, ['batas', 'page', 'limit']);
   const { page, limit, skip } = getPagination(query);
@@ -84,6 +90,7 @@ export async function lowStock(query) {
   return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
 }
 
+// Ketersediaan stok
 export async function availability(query) {
   validateQuery(query, []);
   const [jumlahBarang, habis] = await Promise.all([

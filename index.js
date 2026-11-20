@@ -12,8 +12,9 @@ import laporanRoutes from './routes/laporanRoutes.js';
 const app = express();
 app.disable('x-powered-by');
 
-// Membaca JSON dari body request.
+// Baca JSON
 app.use(express.json({ limit: '100kb' }));
+// Validasi format
 app.use((req, res, next) => {
   if (['POST', 'PATCH', 'PUT'].includes(req.method) && !req.is('application/json')) {
     return res.status(415).json({ success: false, message: 'Gunakan Content-Type: application/json.' });
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Cek koneksi
 app.get('/api/health', (req, res) => {
   const connected = mongoose.connection.readyState === 1;
   res.status(connected ? 200 : 503).json({
@@ -30,16 +32,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mendaftarkan endpoint barang, transaksi, dan laporan.
+// Pasang routes
 app.use('/api/barang', barangRoutes);
 app.use('/api/transaksi', transaksiRoutes);
 app.use('/api/laporan', laporanRoutes);
 
+// Endpoint hilang
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan.' });
 });
 
-// Error dari try/catch controller ditangani di satu tempat.
+// Tangani error
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
   let status = error.status || 500;
@@ -66,13 +69,14 @@ app.use((error, req, res, next) => {
   res.status(status).json({ success: false, message });
 });
 
-// Saat diimpor oleh test, aplikasi tidak menyalakan server sendiri.
+// Eksekusi langsung
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     await connectDatabase();
     await Promise.all([Barang.init(), Transaksi.init()]);
     const port = Number(process.env.PORT || 3000);
     const host = process.env.HOST || '127.0.0.1';
+    // Jalankan server
     const server = app.listen(port, host, () => {
       console.log(`Sistem Manajemen Toko Fotokopi: http://${host}:${port}/api/health`);
     });
@@ -81,6 +85,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       await mongoose.disconnect();
       process.exitCode = 1;
     });
+    // Tutup koneksi
     for (const signal of ['SIGINT', 'SIGTERM']) {
       process.once(signal, () => {
         server.close(async () => {

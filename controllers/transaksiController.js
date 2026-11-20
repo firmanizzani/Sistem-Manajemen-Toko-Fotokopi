@@ -1,5 +1,6 @@
 import * as transaksiService from '../services/transaksiService.js';
 
+// Buat transaksi
 export async function create(req, res, next) {
   try {
     const data = await transaksiService.createTransaksi(req.body);
@@ -9,6 +10,7 @@ export async function create(req, res, next) {
   }
 }
 
+// Riwayat transaksi
 export async function list(req, res, next) {
   try {
     const { data, meta } = await transaksiService.listTransaksi(req.query);
@@ -18,6 +20,7 @@ export async function list(req, res, next) {
   }
 }
 
+// Detail transaksi
 export async function detail(req, res, next) {
   try {
     const data = await transaksiService.getTransaksi(req.params.id);
@@ -27,6 +30,7 @@ export async function detail(req, res, next) {
   }
 }
 
+// Batalkan transaksi
 export async function cancel(req, res, next) {
   try {
     const data = await transaksiService.cancelTransaksi(req.params.id, req.body);

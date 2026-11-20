@@ -2,6 +2,7 @@ import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
 import { validateQuery, getDateFilter } from './validation.js';
 
+// Ringkasan inventaris
 export async function getInventaris(query) {
   validateQuery(query, []);
   const barang = await Barang.find({ aktif: true }).lean();
@@ -15,6 +16,7 @@ export async function getInventaris(query) {
   };
 }
 
+// Ringkasan penjualan
 export async function getPenjualan(query) {
   validateQuery(query, ['dari', 'sampai']);
   const transaksi = await Transaksi.find({
@@ -25,11 +27,12 @@ export async function getPenjualan(query) {
   let totalUnitTerjual = 0;
   const penjualanHarian = {};
 
+  // Hitung total
   for (const penjualan of transaksi) {
     totalPenjualan += penjualan.total;
     totalUnitTerjual += penjualan.items.reduce((total, item) => total + item.jumlah, 0);
 
-    // Tambahkan 7 jam untuk mengelompokkan tanggal sesuai WIB.
+    // Tanggal WIB
     const tanggal = new Date(penjualan.tanggal.getTime() + 7 * 60 * 60 * 1000)
       .toISOString().slice(0, 10);
 

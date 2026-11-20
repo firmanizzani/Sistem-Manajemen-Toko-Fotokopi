@@ -7,10 +7,12 @@ import Barang, { namaKunci } from '../models/Barang.js';
 try {
   await connectDatabase();
   await Barang.init();
+  // Baca contoh
   const items = JSON.parse(await readFile(new URL('../data/barang-awal.json', import.meta.url), 'utf8'));
   let added = 0;
   await mongoose.connection.transaction(async (session) => {
     added = 0;
+    // Tambahkan baru
     for (const item of items) {
       const result = await Barang.updateOne({ namaKunci: namaKunci(item.nama) }, {
         $setOnInsert: { ...item, namaKunci: namaKunci(item.nama), aktif: true, createdAt: new Date(), updatedAt: new Date() }

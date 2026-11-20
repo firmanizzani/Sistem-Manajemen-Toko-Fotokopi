@@ -1,8 +1,11 @@
 import mongoose from 'mongoose';
 
+// Koneksi MongoDB
 export async function connectDatabase(uri = process.env.MONGODB_URI) {
   if (!uri) throw new Error('MONGODB_URI belum diisi. Salin .env.example menjadi .env.');
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+
+  // Cek replikasi
   const hello = await mongoose.connection.db.admin().command({ hello: 1 });
   if (!hello.setName && hello.msg !== 'isdbgrid') {
     await mongoose.disconnect();

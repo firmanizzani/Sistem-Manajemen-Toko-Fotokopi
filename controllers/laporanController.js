@@ -1,5 +1,6 @@
 import * as laporanService from '../services/laporanService.js';
 
+// Laporan inventaris
 export async function inventaris(req, res, next) {
   try {
     const data = await laporanService.getInventaris(req.query);
@@ -9,6 +10,7 @@ export async function inventaris(req, res, next) {
   }
 }
 
+// Laporan penjualan
 export async function penjualan(req, res, next) {
   try {
     const data = await laporanService.getPenjualan(req.query);

@@ -52,7 +52,7 @@ Contoh alur: `POST /api/barang` → `barangRoutes.js` → `barangController.js` 
 | GET | `/api/barang/ketersediaan` | Cek ketersediaan stok |
 | GET | `/api/barang/:id` | Detail barang |
 | PATCH | `/api/barang/:id` | Ubah data barang |
-| DELETE | `/api/barang/:id` | Arsipkan barang dengan stok nol |
+| DELETE | `/api/barang/:id` | Hapus permanen barang dengan stok nol |
 | POST | `/api/transaksi` | Catat barang masuk/penjualan |
 | GET | `/api/transaksi` | Riwayat transaksi |
 | GET | `/api/transaksi/:id` | Detail transaksi |
@@ -61,6 +61,8 @@ Contoh alur: `POST /api/barang` → `barangRoutes.js` → `barangController.js` 
 | GET | `/api/laporan/penjualan` | Total penjualan dan rekap harian |
 
 Body POST/PATCH menggunakan JSON. Stok setelah pembuatan barang diubah melalui transaksi. Detail barang setiap transaksi disimpan dalam array `items`.
+
+DELETE menghapus barang dari MongoDB, sedangkan riwayat transaksinya tetap tersimpan. Transaksi yang melibatkan barang yang sudah dihapus tidak dapat dibatalkan. Selesaikan koreksi transaksi sebelum menghapus barang.
 
 ## Pengujian
 
@@ -71,7 +73,7 @@ npm test
 npm run test:postman
 ```
 
-Untuk Postman, import [collection ini](postman/sistem-manajemen-toko-fotokopi.postman_collection.json) dan jalankan berurutan. Hasil terakhir: **20 test integrasi dan 73 assertion Postman lulus**.
+Untuk Postman, import [collection ini](postman/sistem-manajemen-toko-fotokopi.postman_collection.json) dan jalankan berurutan. Hasil terakhir: **20 test integrasi dan 75 assertion Postman lulus**.
 
 Contoh request tersedia di collection Postman. Bukti pengujian otomatis tersimpan di [hasil pengujian](postman/hasil-pengujian.json). Query barang: `q`, `kategori`, `stokMaks`; query riwayat: `jenis`, `status`, `barangId`, `dari`, `sampai` (tanggal `YYYY-MM-DD`, WIB).
 

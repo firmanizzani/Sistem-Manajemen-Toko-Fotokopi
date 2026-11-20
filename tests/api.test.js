@@ -36,7 +36,7 @@ test('health dan endpoint tidak dikenal menggunakan status yang benar', async ()
   await api.get('/tidak-ada').expect(404);
 });
 
-test('CRUD barang, penolakan stok langsung, dan pengarsipan stok nol', async () => {
+test('CRUD barang, penolakan stok langsung, dan penghapusan permanen stok nol', async () => {
   const c = (await api.post('/api/barang').send({ nama: 'Map', kategori: 'Aksesoris', harga: 4000 }).expect(201)).body.data;
   await api.get(`/api/barang/${c._id}`).expect(200);
   const updated = await api.patch(`/api/barang/${c._id}`).send({ nama: 'Map Plastik', harga: 4500 }).expect(200);
@@ -44,10 +44,12 @@ test('CRUD barang, penolakan stok langsung, dan pengarsipan stok nol', async () 
   await api.patch(`/api/barang/${c._id}`).send({ stok: 99 }).expect(400);
   await api.delete(`/api/barang/${a._id}`).expect(409);
   await api.delete(`/api/barang/${c._id}`).expect(200);
-  assert.equal((await api.get(`/api/barang/${c._id}`)).body.data.aktif, false);
-  const archived = await api.get('/api/barang?aktif=false').expect(200);
-  assert.equal(archived.body.meta.total, 1);
+  await api.get(`/api/barang/${c._id}`).expect(404);
+  assert.equal(await Barang.countDocuments({ _id: c._id }), 0);
+  assert.equal((await api.get('/api/barang')).body.meta.total, 2);
   await api.delete(`/api/barang/${c._id}`).expect(404);
+  const replacement = await api.post('/api/barang').send({ nama: 'Map Plastik', kategori: 'Aksesoris', harga: 4500 }).expect(201);
+  assert.notEqual(replacement.body.data._id, c._id);
 });
 
 test('validasi nama duplikat mengabaikan kapital/spasi dan juga berlaku saat update', async () => {
@@ -194,13 +196,20 @@ test('filter riwayat dan laporan rentang tanggal menghormati batas hari WIB', as
   for (const query of ['dari=2026-02-30', 'dari=2026-11-22&sampai=2026-11-20', 'status=salah', 'barangId=x']) await api.get(`/api/transaksi?${query}`).expect(400);
 });
 
-test('barang diarsipkan tidak boleh ditransaksikan atau dipulihkan lewat pembatalan', async () => {
-  const transaksi = (await sale([{ barangId: a._id, jumlah: 5 }])).body.data;
-  await api.delete(`/api/barang/${a._id}`).expect(200);
-  await api.post('/api/transaksi').send({ jenis: 'masuk', items: [{ barangId: a._id, jumlah: 1 }] }).expect(404);
-  await api.patch(`/api/transaksi/${transaksi._id}/batal`).send({ alasan: 'Batal' }).expect(409);
+test('hapus barang mempertahankan riwayat dan menolak pembatalan tanpa perubahan sebagian', async () => {
+  const transaksi = (await sale([{ barangId: a._id, jumlah: 5 }, { barangId: b._id, jumlah: 4 }]).expect(201)).body.data;
+  await api.delete(`/api/barang/${b._id}`).expect(200);
+  assert.equal(await Barang.countDocuments({ _id: b._id }), 0);
+  await api.post('/api/transaksi').send({ jenis: 'masuk', items: [{ barangId: b._id, jumlah: 1 }] }).expect(404);
+  const cancellation = await api.patch(`/api/transaksi/${transaksi._id}/batal`).send({ alasan: 'Batal' }).expect(409);
+  assert.match(cancellation.body.message, /sudah dihapus/);
   assert.equal(await stock(a), 0);
-  assert.equal((await api.get(`/api/transaksi/${transaksi._id}`)).body.data.items[0].nama, 'Pulpen');
+  await api.get(`/api/barang/${b._id}`).expect(404);
+  const history = (await api.get(`/api/transaksi/${transaksi._id}`).expect(200)).body.data;
+  assert.equal(history.status, 'selesai');
+  assert.equal(history.items.find((item) => item.barangId === b._id).nama, 'Buku');
+  assert.equal(history.total, 37500);
+  assert.equal((await api.get('/api/laporan/penjualan')).body.data.totalPenjualan, 37500);
 });
 
 test('database kosong memiliki laporan dan ketersediaan yang jelas', async () => {

@@ -2,7 +2,7 @@
   "info": {
     "name": "Sistem Manajemen Toko Fotokopi",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Jalankan seluruh collection berurutan. Membuat dua barang demo, restock, penjualan, pembatalan, dan pengarsipan. Nama demo unik per run. Detail tersimpan di array items. Gunakan database demo untuk presentasi."
+    "description": "Jalankan seluruh collection berurutan. Membuat dua barang demo, restock, penjualan, pembatalan, dan penghapusan permanen barang demo. Nama demo unik per run. Detail tersimpan di array items. Gunakan database demo untuk presentasi."
   },
   "variable": [
     {
@@ -1027,7 +1027,7 @@
       ]
     },
     {
-      "name": "26 Hapus atau arsipkan barang A",
+      "name": "26 Hapus permanen barang A",
       "request": {
         "method": "DELETE",
         "header": [],
@@ -1050,14 +1050,15 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
+              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
+              "pm.test('Barang benar-benar terhapus', () => { pm.sendRequest(pm.variables.replaceIn('{{baseUrl}}/api/barang/{{barangA}}'), (error, response) => { pm.expect(error).to.not.exist; pm.expect(response.code).to.eql(404); }); });"
             ]
           }
         }
       ]
     },
     {
-      "name": "27 Hapus atau arsipkan barang B",
+      "name": "27 Hapus permanen barang B",
       "request": {
         "method": "DELETE",
         "header": [],
@@ -1080,7 +1081,8 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });"
+              "pm.test('Response JSON dan success sesuai', () => { pm.response.to.be.json; pm.expect(pm.response.json().success).to.eql(true); });",
+              "pm.test('Barang benar-benar terhapus', () => { pm.sendRequest(pm.variables.replaceIn('{{baseUrl}}/api/barang/{{barangB}}'), (error, response) => { pm.expect(error).to.not.exist; pm.expect(response.code).to.eql(404); }); });"
             ]
           }
         }

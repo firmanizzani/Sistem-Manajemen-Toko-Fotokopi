@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Detail transaksi
 const detailSchema = new mongoose.Schema({
   barangId: { type: mongoose.Schema.Types.ObjectId, ref: 'Barang', required: true },
   nama: { type: String, required: true },
@@ -8,6 +9,7 @@ const detailSchema = new mongoose.Schema({
   subtotal: { type: Number, required: true, min: 0 }
 }, { _id: false });
 
+// Struktur transaksi
 const transaksiSchema = new mongoose.Schema({
   nomorTransaksi: { type: String, required: true, unique: true },
   jenis: { type: String, enum: ['masuk', 'keluar'], required: true },
@@ -20,6 +22,7 @@ const transaksiSchema = new mongoose.Schema({
   dibatalkanPada: Date
 }, { timestamps: true, collection: 'transaksi', versionKey: false });
 
+// Indeks pencarian
 transaksiSchema.index({ tanggal: -1, _id: -1 });
 transaksiSchema.index({ 'items.barangId': 1 });
 export default mongoose.model('Transaksi', transaksiSchema);

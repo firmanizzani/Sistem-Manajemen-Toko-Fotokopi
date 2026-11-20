@@ -1,6 +1,6 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-20T12:15:21.565Z",
+  "runAt": "2026-11-20T12:32:58.514Z",
   "runner": "Newman (Postman collection)",
   "database": "Database pengujian sementara; dihapus setelah pengujian.",
   "stats": {
@@ -25,7 +25,7 @@
       "failed": 0
     },
     "requests": {
-      "total": 31,
+      "total": 33,
       "pending": 0,
       "failed": 0
     },
@@ -35,7 +35,7 @@
       "failed": 0
     },
     "assertions": {
-      "total": 73,
+      "total": 75,
       "pending": 0,
       "failed": 0
     },
@@ -472,9 +472,9 @@
       ]
     },
     {
-      "name": "26 Hapus atau arsipkan barang A",
-      "method": "DELETE",
-      "status": 200,
+      "name": "26 Hapus permanen barang A",
+      "method": "GET",
+      "status": 404,
       "assertions": [
         {
           "name": "HTTP 200",
@@ -482,14 +482,18 @@
         },
         {
           "name": "Response JSON dan success sesuai",
+          "passed": true
+        },
+        {
+          "name": "Barang benar-benar terhapus",
           "passed": true
         }
       ]
     },
     {
-      "name": "27 Hapus atau arsipkan barang B",
-      "method": "DELETE",
-      "status": 200,
+      "name": "26 Hapus permanen barang A",
+      "method": "GET",
+      "status": 404,
       "assertions": [
         {
           "name": "HTTP 200",
@@ -497,6 +501,48 @@
         },
         {
           "name": "Response JSON dan success sesuai",
+          "passed": true
+        },
+        {
+          "name": "Barang benar-benar terhapus",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "27 Hapus permanen barang B",
+      "method": "GET",
+      "status": 404,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Response JSON dan success sesuai",
+          "passed": true
+        },
+        {
+          "name": "Barang benar-benar terhapus",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "27 Hapus permanen barang B",
+      "method": "GET",
+      "status": 404,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Response JSON dan success sesuai",
+          "passed": true
+        },
+        {
+          "name": "Barang benar-benar terhapus",
           "passed": true
         }
       ]

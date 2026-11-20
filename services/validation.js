@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// Error ini membawa HTTP status agar controller dapat meneruskannya ke server.
+// Status error
 export class HttpError extends Error {
   constructor(status, message) {
     super(message);
@@ -8,16 +8,19 @@ export class HttpError extends Error {
   }
 }
 
+// Tolak input
 export function fail(message) {
   throw new HttpError(400, message);
 }
 
+// Validasi body
 export function validateBody(value, allowed) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('Body harus berupa object JSON.');
   const unknown = Object.keys(value).filter((key) => !allowed.includes(key));
   if (unknown.length) fail(`Field tidak dikenal: ${unknown.join(', ')}.`);
 }
 
+// Validasi teks
 export function validateText(value, label, max = 120) {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max) {
     fail(`${label} wajib berupa teks berisi 1–${max} karakter.`);
@@ -25,6 +28,7 @@ export function validateText(value, label, max = 120) {
   return value.trim();
 }
 
+// Validasi angka
 export function validateInteger(value, label, min = 0, max = 1_000_000_000) {
   if (!Number.isSafeInteger(value) || value < min || value > max) {
     fail(`${label} harus bilangan bulat antara ${min} dan ${max}.`);
@@ -32,11 +36,13 @@ export function validateInteger(value, label, min = 0, max = 1_000_000_000) {
   return value;
 }
 
+// Validasi ID
 export function validateId(value, label = 'ID') {
   if (typeof value !== 'string' || !mongoose.isObjectIdOrHexString(value)) fail(`${label} tidak valid.`);
   return value;
 }
 
+// Validasi query
 export function validateQuery(query, allowed) {
   validateBody(query, allowed);
   for (const value of Object.values(query)) {
@@ -44,17 +50,21 @@ export function validateQuery(query, allowed) {
   }
 }
 
+// Angka query
 export function readQueryInteger(value, label, fallback, min = 0, max = 1_000_000_000) {
   if (value === undefined) return fallback;
   if (!/^\d+$/.test(value)) fail(`${label} harus berupa bilangan bulat.`);
   return validateInteger(Number(value), label, min, max);
 }
 
+// Pembagian halaman
 export function getPagination(query) {
   const page = readQueryInteger(query.page, 'page', 1, 1, 1_000_000);
   const limit = readQueryInteger(query.limit, 'limit', 20, 1, 100);
   return { page, limit, skip: (page - 1) * limit };
 }
+
+// Filter tanggal
 export function getDateFilter(query) {
   const range = {};
   for (const [key, operator] of [['dari', '$gte'], ['sampai', '$lt']]) {
@@ -70,4 +80,5 @@ export function getDateFilter(query) {
   return Object.keys(range).length ? { tanggal: range } : {};
 }
 
+// Amankan pencarian
 export function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
