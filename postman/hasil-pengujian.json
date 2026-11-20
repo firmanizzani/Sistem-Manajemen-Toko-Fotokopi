@@ -1,6 +1,6 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-20T12:32:58.514Z",
+  "runAt": "2026-11-20T13:09:28.632Z",
   "runner": "Newman (Postman collection)",
   "database": "Database pengujian sementara; dihapus setelah pengujian.",
   "stats": {
@@ -10,37 +10,37 @@
       "failed": 0
     },
     "items": {
-      "total": 31,
-      "pending": 0,
-      "failed": 0
-    },
-    "scripts": {
-      "total": 32,
-      "pending": 0,
-      "failed": 0
-    },
-    "prerequests": {
-      "total": 31,
-      "pending": 0,
-      "failed": 0
-    },
-    "requests": {
       "total": 33,
       "pending": 0,
       "failed": 0
     },
+    "scripts": {
+      "total": 34,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequests": {
+      "total": 33,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 35,
+      "pending": 0,
+      "failed": 0
+    },
     "tests": {
-      "total": 31,
+      "total": 33,
       "pending": 0,
       "failed": 0
     },
     "assertions": {
-      "total": 75,
+      "total": 79,
       "pending": 0,
       "failed": 0
     },
     "testScripts": {
-      "total": 31,
+      "total": 33,
       "pending": 0,
       "failed": 0
     },
@@ -181,7 +181,7 @@
       ]
     },
     {
-      "name": "09 Barang masuk banyak item",
+      "name": "09 Restock banyak item",
       "method": "POST",
       "status": 201,
       "assertions": [
@@ -194,7 +194,7 @@
           "passed": true
         },
         {
-          "name": "Barang masuk bukan pendapatan",
+          "name": "Nomor restock normal",
           "passed": true
         }
       ]
@@ -457,7 +457,7 @@
       ]
     },
     {
-      "name": "25 Pembatalan barang masuk",
+      "name": "25 Pembatalan restock",
       "method": "PATCH",
       "status": 200,
       "assertions": [
@@ -603,6 +603,36 @@
         },
         {
           "name": "Response JSON dan success sesuai",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "32 Riwayat restock",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Response berhasil",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "33 Detail restock",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "passed": true
+        },
+        {
+          "name": "Response berhasil",
           "passed": true
         }
       ]

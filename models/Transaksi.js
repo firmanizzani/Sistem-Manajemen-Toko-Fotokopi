@@ -12,7 +12,6 @@ const detailSchema = new mongoose.Schema({
 // Struktur transaksi
 const transaksiSchema = new mongoose.Schema({
   nomorTransaksi: { type: String, required: true, unique: true },
-  jenis: { type: String, enum: ['masuk', 'keluar'], required: true },
   tanggal: { type: Date, required: true, default: Date.now },
   items: { type: [detailSchema], required: true },
   total: { type: Number, required: true, min: 0 },
@@ -20,7 +19,7 @@ const transaksiSchema = new mongoose.Schema({
   catatan: { type: String, default: '', maxlength: 500 },
   alasanPembatalan: { type: String, maxlength: 500 },
   dibatalkanPada: Date
-}, { timestamps: true, collection: 'transaksi', versionKey: false });
+}, { collection: 'transaksi', versionKey: false });
 
 // Indeks pencarian
 transaksiSchema.index({ tanggal: -1, _id: -1 });

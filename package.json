@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "seed": "node scripts/seed.js",
+    "seed:transaksi": "node scripts/seed-transaksi.js",
     "test": "node --test --test-concurrency=1 tests/api.test.js",
     "test:postman": "node tests/postman.js"
   },

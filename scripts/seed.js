@@ -15,8 +15,8 @@ try {
     // Tambahkan baru
     for (const item of items) {
       const result = await Barang.updateOne({ namaKunci: namaKunci(item.nama) }, {
-        $setOnInsert: { ...item, namaKunci: namaKunci(item.nama), aktif: true, createdAt: new Date(), updatedAt: new Date() }
-      }, { upsert: true, session, timestamps: false });
+        $setOnInsert: { ...item, namaKunci: namaKunci(item.nama), aktif: true }
+      }, { upsert: true, session });
       added += result.upsertedCount;
     }
   });

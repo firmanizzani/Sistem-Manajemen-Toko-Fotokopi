@@ -6,6 +6,7 @@ import app from '../index.js';
 import { connectDatabase } from '../config/database.js';
 import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
+import Restock from '../models/Restock.js';
 
 const databaseName = `fotokopi_postman_${Date.now()}_${process.pid}`;
 const uri = new URL(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/?replicaSet=rsFotokopi&directConnection=true');
@@ -13,7 +14,7 @@ uri.pathname = `/${databaseName}`;
 let server;
 try {
   await connectDatabase(uri.toString());
-  await Promise.all([Barang.init(), Transaksi.init()]);
+  await Promise.all([Barang.init(), Transaksi.init(), Restock.init()]);
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const collection = JSON.parse(await readFile(new URL('../postman/sistem-manajemen-toko-fotokopi.postman_collection.json', import.meta.url), 'utf8'));

@@ -9,7 +9,7 @@ const barangSchema = new mongoose.Schema({
   stok: { type: Number, required: true, default: 0, min: 0, max: 1_000_000_000 },
   stokMinimum: { type: Number, default: 10, min: 0, max: 1_000_000_000 },
   aktif: { type: Boolean, default: true }
-}, { timestamps: true, collection: 'barang', versionKey: false });
+}, { collection: 'barang', versionKey: false });
 
 // Standarkan nama
 export const namaKunci = (nama) => nama.trim().replace(/\s+/g, ' ').toLowerCase();

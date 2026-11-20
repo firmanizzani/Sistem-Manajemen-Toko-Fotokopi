@@ -20,7 +20,7 @@ export async function getInventaris(query) {
 export async function getPenjualan(query) {
   validateQuery(query, ['dari', 'sampai']);
   const transaksi = await Transaksi.find({
-    jenis: 'keluar', status: 'selesai', ...getDateFilter(query)
+    status: 'selesai', ...getDateFilter(query)
   }).lean();
 
   let totalPenjualan = 0;

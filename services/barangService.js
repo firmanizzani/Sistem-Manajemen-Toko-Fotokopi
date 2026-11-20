@@ -29,7 +29,7 @@ export async function listBarang(query) {
   if (query.kategori !== undefined) filter.kategori = validateText(query.kategori, 'kategori', 80);
   if (query.stokMaks !== undefined) filter.stok = { $lte: readQueryInteger(query.stokMaks, 'stokMaks') };
   // Urutkan data
-  const sorts = { nama: { nama: 1, _id: 1 }, stok: { stok: 1, _id: 1 }, '-stok': { stok: -1, _id: -1 }, terbaru: { createdAt: -1, _id: -1 } };
+  const sorts = { nama: { nama: 1, _id: 1 }, stok: { stok: 1, _id: 1 }, '-stok': { stok: -1, _id: -1 }, terbaru: { _id: -1 } };
   const sort = query.sort ?? 'nama';
   if (!Object.hasOwn(sorts, sort)) throw new HttpError(400, 'sort harus nama, stok, -stok, atau terbaru.');
   const { page, limit, skip } = getPagination(query);

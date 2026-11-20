@@ -5,9 +5,11 @@ import { pathToFileURL } from 'node:url';
 import { connectDatabase } from './config/database.js';
 import Barang from './models/Barang.js';
 import Transaksi from './models/Transaksi.js';
+import Restock from './models/Restock.js';
 import barangRoutes from './routes/barangRoutes.js';
 import transaksiRoutes from './routes/transaksiRoutes.js';
 import laporanRoutes from './routes/laporanRoutes.js';
+import restockRoutes from './routes/restockRoutes.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -35,6 +37,7 @@ app.get('/api/health', (req, res) => {
 // Pasang routes
 app.use('/api/barang', barangRoutes);
 app.use('/api/transaksi', transaksiRoutes);
+app.use('/api/restock', restockRoutes);
 app.use('/api/laporan', laporanRoutes);
 
 // Endpoint hilang
@@ -73,7 +76,7 @@ app.use((error, req, res, next) => {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     await connectDatabase();
-    await Promise.all([Barang.init(), Transaksi.init()]);
+    await Promise.all([Barang.init(), Transaksi.init(), Restock.init()]);
     const port = Number(process.env.PORT || 3000);
     const host = process.env.HOST || '127.0.0.1';
     // Jalankan server

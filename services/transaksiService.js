@@ -2,23 +2,14 @@ import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
-import { HttpError, validateBody, validateText, validateInteger, validateId, validateQuery, getDateFilter, getPagination, fail } from './validation.js';
+import { HttpError, validateBody, validateText, validateItems, validateId, validateQuery, getDateFilter, getPagination, fail } from './validation.js';
 
 // Validasi transaksi
 function validateTransaksi(body) {
-  validateBody(body, ['jenis', 'items', 'catatan']);
-  if (!['masuk', 'keluar'].includes(body.jenis)) fail('jenis harus masuk atau keluar.');
-  if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) fail('items harus berisi 1–50 barang.');
-  const seen = new Set();
-  const items = body.items.map((item) => {
-    validateBody(item, ['barangId', 'jumlah']);
-    const barangId = validateId(item.barangId, 'barangId').toLowerCase();
-    if (seen.has(barangId)) fail('Barang yang sama tidak boleh berulang dalam satu transaksi; gabungkan jumlahnya.');
-    seen.add(barangId);
-    return { barangId, jumlah: validateInteger(item.jumlah, 'jumlah', 1, 1_000_000) };
-  });
+  validateBody(body, ['items', 'catatan']);
+  const items = validateItems(body.items);
   const catatan = body.catatan === undefined ? '' : validateText(body.catatan, 'catatan', 500);
-  return { jenis: body.jenis, items, catatan };
+  return { items, catatan };
 }
 
 // Buat transaksi
@@ -33,12 +24,11 @@ export async function createTransaksi(body) {
       const barang = await Barang.findOne({ _id: item.barangId, aktif: true }).session(session);
       if (!barang) throw new HttpError(404, `Barang ${item.barangId} tidak ditemukan atau tidak aktif.`);
       // Perbarui stok
-      const delta = input.jenis === 'masuk' ? item.jumlah : -item.jumlah;
-      const filter = { _id: barang._id, aktif: true, stok: delta < 0 ? { $gte: item.jumlah } : { $lte: 1_000_000_000 - delta } };
-      const updated = await Barang.findOneAndUpdate(filter, { $inc: { stok: delta } }, { session, returnDocument: 'after' });
+      const filter = { _id: barang._id, aktif: true, stok: { $gte: item.jumlah } };
+      const updated = await Barang.findOneAndUpdate(filter, { $inc: { stok: -item.jumlah } }, { session, returnDocument: 'after' });
       if (!updated) throw new HttpError(409, `Stok ${barang.nama} tidak cukup atau melampaui batas.`);
       // Hitung subtotal
-      const harga = input.jenis === 'keluar' ? barang.harga : 0;
+      const harga = barang.harga;
       const subtotal = harga * item.jumlah;
       total += subtotal;
       if (!Number.isSafeInteger(total)) fail('Total transaksi melebihi batas angka yang didukung.');
@@ -46,7 +36,7 @@ export async function createTransaksi(body) {
     }
     // Simpan transaksi
     const [transaksi] = await Transaksi.create([{
-      nomorTransaksi: `TRX-${randomUUID()}`, jenis: input.jenis,
+      nomorTransaksi: `TRX-${randomUUID()}`,
       tanggal: new Date(), items: details, total, catatan: input.catatan
     }], { session });
     return transaksi;
@@ -64,11 +54,10 @@ export async function cancelTransaksi(transaksiId, body) {
     if (transaksi.status !== 'selesai') throw new HttpError(409, 'Transaksi sudah dibatalkan.');
     for (const item of [...transaksi.items].sort((a, b) => String(a.barangId).localeCompare(String(b.barangId)))) {
       // Pulihkan stok
-      const delta = transaksi.jenis === 'masuk' ? -item.jumlah : item.jumlah;
       const barang = await Barang.findOneAndUpdate({
         _id: item.barangId, aktif: true,
-        stok: delta < 0 ? { $gte: item.jumlah } : { $lte: 1_000_000_000 - delta }
-      }, { $inc: { stok: delta } }, { session, returnDocument: 'after' });
+        stok: { $lte: 1_000_000_000 - item.jumlah }
+      }, { $inc: { stok: item.jumlah } }, { session, returnDocument: 'after' });
       if (!barang) {
         const existing = await Barang.findById(item.barangId).session(session);
         if (!existing) throw new HttpError(409, `Pembatalan gagal: barang "${item.nama}" sudah dihapus.`);
@@ -86,12 +75,8 @@ export async function cancelTransaksi(transaksiId, body) {
 
 // Riwayat transaksi
 export async function listTransaksi(query) {
-  validateQuery(query, ['jenis', 'status', 'barangId', 'dari', 'sampai', 'page', 'limit']);
+  validateQuery(query, ['status', 'barangId', 'dari', 'sampai', 'page', 'limit']);
   const filter = getDateFilter(query);
-  if (query.jenis !== undefined) {
-    if (!['masuk', 'keluar'].includes(query.jenis)) fail('jenis harus masuk atau keluar.');
-    filter.jenis = query.jenis;
-  }
   if (query.status !== undefined) {
     if (!['selesai', 'dibatalkan'].includes(query.status)) fail('status harus selesai atau dibatalkan.');
     filter.status = query.status;

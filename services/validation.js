@@ -82,3 +82,16 @@ export function getDateFilter(query) {
 
 // Amankan pencarian
 export function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// Validasi barang
+export function validateItems(items) {
+  if (!Array.isArray(items) || items.length < 1 || items.length > 50) fail('items harus berisi 1–50 barang.');
+  const seen = new Set();
+  return items.map((item) => {
+    validateBody(item, ['barangId', 'jumlah']);
+    const barangId = validateId(item.barangId, 'barangId').toLowerCase();
+    if (seen.has(barangId)) fail('Barang yang sama tidak boleh berulang; gabungkan jumlahnya.');
+    seen.add(barangId);
+    return { barangId, jumlah: validateInteger(item.jumlah, 'jumlah', 1, 1_000_000) };
+  });
+}
