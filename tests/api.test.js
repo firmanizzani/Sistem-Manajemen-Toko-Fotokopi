@@ -2,11 +2,11 @@ import { before, after, beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import request from 'supertest';
-import app from '../index.js';
-import { connectDatabase } from '../config/database.js';
-import Barang from '../models/Barang.js';
-import Transaksi from '../models/Transaksi.js';
-import Restock from '../models/Restock.js';
+import app from '../src/app.js';
+import { connectDatabase } from '../src/config/database.js';
+import Barang from '../src/models/Barang.js';
+import Transaksi from '../src/models/Transaksi.js';
+import Restock from '../src/models/Restock.js';
 
 const databaseName = `fotokopi_test_${Date.now()}_${process.pid}`;
 const baseUri = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/?replicaSet=rsFotokopi&directConnection=true';

@@ -2,15 +2,10 @@ import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
-import { HttpError, validateBody, validateText, validateItems, validateId, validateQuery, getDateFilter, getPagination, fail } from './validation.js';
-
-// Validasi transaksi
-function validateTransaksi(body) {
-  validateBody(body, ['items', 'catatan']);
-  const items = validateItems(body.items);
-  const catatan = body.catatan === undefined ? '' : validateText(body.catatan, 'catatan', 500);
-  return { items, catatan };
-}
+import AppError from '../utils/AppError.js';
+import { validateId, validateQuery, fail } from '../validators/commonValidator.js';
+import { validateTransaksi, validatePembatalan } from '../validators/transaksiValidator.js';
+import { getDateFilter, getPagination } from '../utils/queryHelpers.js';
 
 // Buat transaksi
 export async function createTransaksi(body) {
@@ -22,11 +17,11 @@ export async function createTransaksi(body) {
     // Urutkan barang
     for (const item of [...input.items].sort((a, b) => a.barangId.localeCompare(b.barangId))) {
       const barang = await Barang.findOne({ _id: item.barangId, aktif: true }).session(session);
-      if (!barang) throw new HttpError(404, `Barang ${item.barangId} tidak ditemukan atau tidak aktif.`);
+      if (!barang) throw new AppError(404, `Barang ${item.barangId} tidak ditemukan atau tidak aktif.`);
       // Perbarui stok
       const filter = { _id: barang._id, aktif: true, stok: { $gte: item.jumlah } };
       const updated = await Barang.findOneAndUpdate(filter, { $inc: { stok: -item.jumlah } }, { session, returnDocument: 'after' });
-      if (!updated) throw new HttpError(409, `Stok ${barang.nama} tidak cukup atau melampaui batas.`);
+      if (!updated) throw new AppError(409, `Stok ${barang.nama} tidak cukup atau melampaui batas.`);
       // Hitung subtotal
       const harga = barang.harga;
       const subtotal = harga * item.jumlah;
@@ -46,12 +41,11 @@ export async function createTransaksi(body) {
 // Batalkan transaksi
 export async function cancelTransaksi(transaksiId, body) {
   validateId(transaksiId);
-  validateBody(body, ['alasan']);
-  const alasan = validateText(body.alasan, 'alasan', 500);
+  const alasan = validatePembatalan(body);
   return mongoose.connection.transaction(async (session) => {
     const transaksi = await Transaksi.findById(transaksiId).session(session);
-    if (!transaksi) throw new HttpError(404, 'Transaksi tidak ditemukan.');
-    if (transaksi.status !== 'selesai') throw new HttpError(409, 'Transaksi sudah dibatalkan.');
+    if (!transaksi) throw new AppError(404, 'Transaksi tidak ditemukan.');
+    if (transaksi.status !== 'selesai') throw new AppError(409, 'Transaksi sudah dibatalkan.');
     for (const item of [...transaksi.items].sort((a, b) => String(a.barangId).localeCompare(String(b.barangId)))) {
       // Pulihkan stok
       const barang = await Barang.findOneAndUpdate({
@@ -60,8 +54,8 @@ export async function cancelTransaksi(transaksiId, body) {
       }, { $inc: { stok: item.jumlah } }, { session, returnDocument: 'after' });
       if (!barang) {
         const existing = await Barang.findById(item.barangId).session(session);
-        if (!existing) throw new HttpError(409, `Pembatalan gagal: barang "${item.nama}" sudah dihapus.`);
-        throw new HttpError(409, `Pembatalan gagal: ${item.nama} tidak aktif, stok tidak cukup, atau melampaui batas.`);
+        if (!existing) throw new AppError(409, `Pembatalan gagal: barang "${item.nama}" sudah dihapus.`);
+        throw new AppError(409, `Pembatalan gagal: ${item.nama} tidak aktif, stok tidak cukup, atau melampaui batas.`);
       }
     }
     // Catat pembatalan
@@ -92,6 +86,6 @@ export async function listTransaksi(query) {
 // Detail transaksi
 export async function getTransaksi(transaksiId) {
   const data = await Transaksi.findById(validateId(transaksiId));
-  if (!data) throw new HttpError(404, 'Transaksi tidak ditemukan.');
+  if (!data) throw new AppError(404, 'Transaksi tidak ditemukan.');
   return data;
 }

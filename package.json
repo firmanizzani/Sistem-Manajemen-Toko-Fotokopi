@@ -2,10 +2,10 @@
   "name": "sistem-manajemen-toko-fotokopi",
   "version": "1.0.0",
   "description": "REST API inventaris dan transaksi toko fotokopi menggunakan ExpressJS dan MongoDB",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "seed": "node scripts/seed.js",
     "seed:transaksi": "node scripts/seed-transaksi.js",
     "test": "node --test --test-concurrency=1 tests/api.test.js",

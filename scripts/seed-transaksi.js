@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { connectDatabase } from '../config/database.js';
-import Barang from '../models/Barang.js';
-import Transaksi from '../models/Transaksi.js';
-import Restock from '../models/Restock.js';
-import { createTransaksi, cancelTransaksi } from '../services/transaksiService.js';
-import { createRestock } from '../services/restockService.js';
+import { connectDatabase } from '../src/config/database.js';
+import Barang from '../src/models/Barang.js';
+import Transaksi from '../src/models/Transaksi.js';
+import Restock from '../src/models/Restock.js';
+import { createTransaksi, cancelTransaksi } from '../src/services/transaksiService.js';
+import { createRestock } from '../src/services/restockService.js';
 
 // Contoh transaksi
 const contoh = [

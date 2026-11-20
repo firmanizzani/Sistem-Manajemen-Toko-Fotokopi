@@ -2,24 +2,25 @@ import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import Barang from '../models/Barang.js';
 import Restock from '../models/Restock.js';
-import { HttpError, validateBody, validateText, validateItems, validateId, validateQuery, getDateFilter, getPagination, fail } from './validation.js';
+import AppError from '../utils/AppError.js';
+import { validateId, validateQuery, fail } from '../validators/commonValidator.js';
+import { validateTransaksi, validatePembatalan } from '../validators/transaksiValidator.js';
+import { getDateFilter, getPagination } from '../utils/queryHelpers.js';
 
 // Tambah restock
 export async function createRestock(body) {
-  validateBody(body, ['items', 'catatan']);
-  const items = validateItems(body.items);
-  const catatan = body.catatan === undefined ? '' : validateText(body.catatan, 'catatan', 500);
+  const { items, catatan } = validateTransaksi(body);
 
   return mongoose.connection.transaction(async (session) => {
     const details = [];
     for (const item of [...items].sort((a, b) => a.barangId.localeCompare(b.barangId))) {
       const barang = await Barang.findOne({ _id: item.barangId, aktif: true }).session(session);
-      if (!barang) throw new HttpError(404, 'Barang restock tidak ditemukan atau tidak aktif.');
+      if (!barang) throw new AppError(404, 'Barang restock tidak ditemukan atau tidak aktif.');
       // Tambah stok
       const updated = await Barang.findOneAndUpdate({
         _id: barang._id, aktif: true, stok: { $lte: 1_000_000_000 - item.jumlah }
       }, { $inc: { stok: item.jumlah } }, { session, returnDocument: 'after' });
-      if (!updated) throw new HttpError(409, `Stok ${barang.nama} melampaui batas.`);
+      if (!updated) throw new AppError(409, `Stok ${barang.nama} melampaui batas.`);
       details.push({ barangId: barang._id, nama: barang.nama, jumlah: item.jumlah });
     }
     // Simpan restock
@@ -33,18 +34,17 @@ export async function createRestock(body) {
 // Batalkan restock
 export async function cancelRestock(restockId, body) {
   validateId(restockId);
-  validateBody(body, ['alasan']);
-  const alasan = validateText(body.alasan, 'alasan', 500);
+  const alasan = validatePembatalan(body);
   return mongoose.connection.transaction(async (session) => {
     const restock = await Restock.findById(restockId).session(session);
-    if (!restock) throw new HttpError(404, 'Restock tidak ditemukan.');
-    if (restock.status !== 'selesai') throw new HttpError(409, 'Restock sudah dibatalkan.');
+    if (!restock) throw new AppError(404, 'Restock tidak ditemukan.');
+    if (restock.status !== 'selesai') throw new AppError(409, 'Restock sudah dibatalkan.');
     for (const item of [...restock.items].sort((a, b) => String(a.barangId).localeCompare(String(b.barangId)))) {
       // Kembalikan stok
       const barang = await Barang.findOneAndUpdate({
         _id: item.barangId, aktif: true, stok: { $gte: item.jumlah }
       }, { $inc: { stok: -item.jumlah } }, { session, returnDocument: 'after' });
-      if (!barang) throw new HttpError(409, `Pembatalan restock gagal: ${item.nama} tidak tersedia atau stok telah terpakai.`);
+      if (!barang) throw new AppError(409, `Pembatalan restock gagal: ${item.nama} tidak tersedia atau stok telah terpakai.`);
     }
     restock.status = 'dibatalkan';
     restock.alasanPembatalan = alasan;
@@ -73,6 +73,6 @@ export async function listRestock(query) {
 // Detail restock
 export async function getRestock(restockId) {
   const data = await Restock.findById(validateId(restockId));
-  if (!data) throw new HttpError(404, 'Restock tidak ditemukan.');
+  if (!data) throw new AppError(404, 'Restock tidak ditemukan.');
   return data;
 }

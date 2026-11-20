@@ -1,17 +1,13 @@
 import Barang, { namaKunci } from '../models/Barang.js';
-import { HttpError, validateBody, validateText, validateInteger, validateId, validateQuery, readQueryInteger, getPagination, escapeRegex } from './validation.js';
+import AppError from '../utils/AppError.js';
+import { validateText, validateId, validateQuery, readQueryInteger } from '../validators/commonValidator.js';
+import { validateCreateBarang, validateUpdateBarang } from '../validators/barangValidator.js';
+import { getPagination, escapeRegex } from '../utils/queryHelpers.js';
 
 // Tambah barang
 export async function createBarang(body) {
-  validateBody(body, ['nama', 'kategori', 'harga', 'stok', 'stokMinimum']);
-  const nama = validateText(body.nama, 'nama');
-  const data = await Barang.create({
-    nama, namaKunci: namaKunci(nama),
-    kategori: validateText(body.kategori, 'kategori', 80),
-    harga: validateInteger(body.harga, 'harga'),
-    stok: validateInteger(body.stok === undefined ? 0 : body.stok, 'stok'),
-    stokMinimum: validateInteger(body.stokMinimum === undefined ? 10 : body.stokMinimum, 'stokMinimum')
-  });
+  const input = validateCreateBarang(body);
+  const data = await Barang.create({ ...input, namaKunci: namaKunci(input.nama) });
   const result = data.toObject();
   delete result.namaKunci;
   return result;
@@ -22,7 +18,7 @@ export async function listBarang(query) {
   validateQuery(query, ['q', 'kategori', 'stokMaks', 'aktif', 'sort', 'page', 'limit']);
   const filter = { aktif: true };
   if (query.aktif !== undefined) {
-    if (!['true', 'false'].includes(query.aktif)) throw new HttpError(400, 'aktif harus true atau false.');
+    if (!['true', 'false'].includes(query.aktif)) throw new AppError(400, 'aktif harus true atau false.');
     filter.aktif = query.aktif === 'true';
   }
   if (query.q !== undefined) filter.nama = { $regex: escapeRegex(validateText(query.q, 'q')), $options: 'i' };
@@ -31,7 +27,7 @@ export async function listBarang(query) {
   // Urutkan data
   const sorts = { nama: { nama: 1, _id: 1 }, stok: { stok: 1, _id: 1 }, '-stok': { stok: -1, _id: -1 }, terbaru: { _id: -1 } };
   const sort = query.sort ?? 'nama';
-  if (!Object.hasOwn(sorts, sort)) throw new HttpError(400, 'sort harus nama, stok, -stok, atau terbaru.');
+  if (!Object.hasOwn(sorts, sort)) throw new AppError(400, 'sort harus nama, stok, -stok, atau terbaru.');
   const { page, limit, skip } = getPagination(query);
   const [data, total] = await Promise.all([
     Barang.find(filter).sort(sorts[sort]).skip(skip).limit(limit), Barang.countDocuments(filter)
@@ -42,27 +38,16 @@ export async function listBarang(query) {
 // Cari barang
 export async function getBarang(barangId) {
   const data = await Barang.findById(validateId(barangId));
-  if (!data) throw new HttpError(404, 'Barang tidak ditemukan.');
+  if (!data) throw new AppError(404, 'Barang tidak ditemukan.');
   return data;
 }
 
 // Ubah barang
 export async function updateBarang(barangId, body) {
-  validateBody(body, ['nama', 'kategori', 'harga', 'stokMinimum']);
-  if (!Object.keys(body).length) throw new HttpError(400, 'Isi minimal satu field yang ingin diperbarui.');
-  const update = {};
-  if ('nama' in body) {
-    update.nama = validateText(body.nama, 'nama');
-    update.namaKunci = namaKunci(update.nama);
-  }
-  if ('kategori' in body) {
-    update.kategori = validateText(body.kategori, 'kategori', 80);
-  }
-  for (const field of ['harga', 'stokMinimum']) {
-    if (field in body) update[field] = validateInteger(body[field], field);
-  }
+  const update = validateUpdateBarang(body);
+  if (update.nama !== undefined) update.namaKunci = namaKunci(update.nama);
   const data = await Barang.findOneAndUpdate({ _id: validateId(barangId), aktif: true }, update, { returnDocument: 'after', runValidators: true });
-  if (!data) throw new HttpError(404, 'Barang aktif tidak ditemukan.');
+  if (!data) throw new AppError(404, 'Barang aktif tidak ditemukan.');
   return data;
 }
 
@@ -71,8 +56,8 @@ export async function deleteBarang(barangId) {
   const data = await Barang.findOneAndDelete({ _id: validateId(barangId), stok: 0 });
   if (!data) {
     const existing = await Barang.findById(barangId);
-    if (!existing) throw new HttpError(404, 'Barang tidak ditemukan.');
-    throw new HttpError(409, 'Barang hanya dapat dihapus ketika stok nol.');
+    if (!existing) throw new AppError(404, 'Barang tidak ditemukan.');
+    throw new AppError(409, 'Barang hanya dapat dihapus ketika stok nol.');
   }
   return data;
 }

@@ -36,14 +36,18 @@ Hentikan API dengan Ctrl+C. MongoDB tetap berjalan sebagai service; biasanya cuk
 
 ## Struktur kode
 
-- `index.js`: server Express dan penanganan error.
-- `routes/`: daftar URL dan HTTP method.
-- `controllers/`: menerima request dan mengirim response.
-- `services/`: logika barang, transaksi, dan laporan; validasi berulang ada di satu file `validation.js`.
-- `models/`: bentuk data barang dan transaksi di MongoDB.
-- `config/database.js`: koneksi MongoDB.
+- `src/server.js`: koneksi database dan menjalankan server.
+- `src/app.js`: konfigurasi Express dan pemasangan routes.
+- `src/routes/`: daftar URL dan HTTP method.
+- `src/controllers/`: menerima request dan mengirim response.
+- `src/services/`: logika barang, penjualan, restock, dan laporan.
+- `src/models/`: bentuk data dalam MongoDB.
+- `src/config/`: konfigurasi koneksi database.
+- `src/middlewares/`: pemeriksaan JSON, endpoint hilang, dan penanganan error.
+- `src/validators/`: pemeriksaan input barang dan transaksi.
+- `src/utils/`: status error serta fungsi pendukung query.
 
-Contoh alur: `POST /api/barang` → `barangRoutes.js` → `barangController.js` → `barangService.js` → model `Barang`.
+Contoh alur: `POST /api/barang` → routes → controller → service → validator/model → response.
 
 ## Endpoint API
 

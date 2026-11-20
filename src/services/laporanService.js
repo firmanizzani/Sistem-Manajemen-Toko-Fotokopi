@@ -1,6 +1,7 @@
 import Barang from '../models/Barang.js';
 import Transaksi from '../models/Transaksi.js';
-import { validateQuery, getDateFilter } from './validation.js';
+import { validateQuery } from '../validators/commonValidator.js';
+import { getDateFilter } from '../utils/queryHelpers.js';
 
 // Ringkasan inventaris
 export async function getInventaris(query) {
