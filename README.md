@@ -1,6 +1,10 @@
 # Sistem Manajemen Toko Fotokopi
 
-REST API untuk mengelola barang, stok, penjualan, dan restock. Final Project Backend Basic KSM Veterantech UPNVJ 2026.
+**Author:** Muhammad Firman Izzani (2510512069).
+
+Sistem Manajemen Toko Fotokopi adalah aplikasi backend berbasis REST API untuk membantu pengelolaan persediaan barang dan pencatatan penjualan di toko fotokopi. Aplikasi ini dikembangkan menggunakan Node.js dan ExpressJS, dengan MongoDB sebagai database, untuk Final Project Backend Basic KSM Veterantech UPNVJ 2026.
+
+Pengguna dapat mengelola data barang, mencatat penjualan beberapa barang sekaligus, serta menambah stok melalui restock. Setiap penjualan mengurangi stok secara otomatis, sedangkan restock menambah stok. Riwayat penjualan dan restock disimpan secara terpisah agar perubahan stok mudah ditelusuri. Aplikasi juga menyediakan pembatalan, pemeriksaan stok menipis atau habis, serta laporan inventaris dan total penjualan. Seluruh fitur diakses melalui HTTP request dan dapat dicoba menggunakan Postman.
 
 ## Fitur
 
@@ -57,18 +61,3 @@ Data contoh opsional: jalankan `npm run seed`, lalu `npm run seed:transaksi`. Pe
 | GET | `/api/laporan/penjualan` | Total penjualan dan rekap harian |
 
 Body POST/PUT/PATCH menggunakan JSON. Stok berubah melalui penjualan, restock, dan pembatalan. Timestamp barang diisi otomatis. Riwayat tetap tersimpan setelah barang dihapus, tetapi transaksi terkait tidak dapat dibatalkan lagi.
-
-## Pengujian
-
-Import [collection presentasi](postman/sistem-manajemen-toko-fotokopi.postman_collection.json) ke Postman. Mulai dari **0. Health Check**, lalu ikuti urutan request. Contoh body dan keterangan variabel tersedia di collection.
-
-Pengujian otomatis:
-
-```powershell
-npm test
-npm run test:postman
-```
-
-Hasil terakhir: **24 test integrasi dan 85 assertion lulus**. [Bukti pengujian](postman/hasil-pengujian.json).
-
-**Author:** Muhammad Firman Izzani (2510512069).

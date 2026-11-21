@@ -1,679 +1,297 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-20T14:03:09.924Z",
-  "runner": "Newman (Postman collection)",
-  "database": "Database pengujian sementara; dihapus setelah pengujian.",
-  "stats": {
-    "iterations": {
-      "total": 1,
-      "pending": 0,
-      "failed": 0
-    },
-    "items": {
-      "total": 35,
-      "pending": 0,
-      "failed": 0
-    },
-    "scripts": {
-      "total": 36,
-      "pending": 0,
-      "failed": 0
-    },
-    "prerequests": {
-      "total": 35,
-      "pending": 0,
-      "failed": 0
-    },
-    "requests": {
-      "total": 37,
-      "pending": 0,
-      "failed": 0
-    },
-    "tests": {
-      "total": 35,
-      "pending": 0,
-      "failed": 0
-    },
-    "assertions": {
-      "total": 85,
-      "pending": 0,
-      "failed": 0
-    },
-    "testScripts": {
-      "total": 35,
-      "pending": 0,
-      "failed": 0
-    },
-    "prerequestScripts": {
-      "total": 1,
-      "pending": 0,
-      "failed": 0
-    }
-  },
-  "failures": [],
-  "requests": [
+  "runAt": "2026-11-21T00:42:30.562Z",
+  "runner": "Node Test Runner dan Newman",
+  "database": "Database uji sementara, terpisah dari data utama.",
+  "passed": true,
+  "scenarios": [
     {
-      "name": "01 Health",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
+      "name": "Alur lengkap dua putaran",
+      "requests": 48,
+      "assertions": 112,
+      "failures": [],
+      "responses": [
         {
-          "name": "HTTP 200",
-          "passed": true
+          "name": "0. Health Check",
+          "method": "GET",
+          "status": 200
         },
         {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
+          "name": "1. READ - Ambil semua barang",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "2. READ - Cari pulpen (Query Parameter)",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. CREATE - Tambah pulpen Standard",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "4. READ - Detail pulpen Standard AE7",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "5. PUT - Ganti data pulpen Standard",
+          "method": "PUT",
+          "status": 200
+        },
+        {
+          "name": "6. PATCH - Ubah harga pulpen Standard",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "7. DELETE - Hapus pulpen Standard AE7",
+          "method": "DELETE",
+          "status": 200
+        },
+        {
+          "name": "8. ERROR - Nama kosong (400)",
+          "method": "POST",
+          "status": 400
+        },
+        {
+          "name": "9. ERROR - Barang tidak ditemukan (404)",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "name": "10. ERROR - ID bukan ObjectId (400)",
+          "method": "GET",
+          "status": 400
+        },
+        {
+          "name": "1. POST - Restock Pulpen Pilot dan Buku Tulis",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "2. GET - Riwayat restock Pulpen Pilot",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. GET - Semua riwayat restock",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. PATCH - Batalkan restock",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "1. POST - Jual 3 Pulpen Pilot dan 2 Buku Tulis",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "2. READ - Riwayat penjualan",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. GET - Penjualan Pulpen Pilot (Query Parameter)",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. READ - Detail penjualan",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "5. PATCH - Batalkan penjualan",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "1. READ - Barang stok menipis",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "2. READ - Ketersediaan stok",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. READ - Laporan inventaris",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. READ - Laporan penjualan",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "0. Health Check",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "1. READ - Ambil semua barang",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "2. READ - Cari pulpen (Query Parameter)",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. CREATE - Tambah pulpen Standard",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "4. READ - Detail pulpen Standard AE7",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "5. PUT - Ganti data pulpen Standard",
+          "method": "PUT",
+          "status": 200
+        },
+        {
+          "name": "6. PATCH - Ubah harga pulpen Standard",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "7. DELETE - Hapus pulpen Standard AE7",
+          "method": "DELETE",
+          "status": 200
+        },
+        {
+          "name": "8. ERROR - Nama kosong (400)",
+          "method": "POST",
+          "status": 400
+        },
+        {
+          "name": "9. ERROR - Barang tidak ditemukan (404)",
+          "method": "GET",
+          "status": 404
+        },
+        {
+          "name": "10. ERROR - ID bukan ObjectId (400)",
+          "method": "GET",
+          "status": 400
+        },
+        {
+          "name": "1. POST - Restock Pulpen Pilot dan Buku Tulis",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "2. GET - Riwayat restock Pulpen Pilot",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. GET - Semua riwayat restock",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. PATCH - Batalkan restock",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "1. POST - Jual 3 Pulpen Pilot dan 2 Buku Tulis",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "2. READ - Riwayat penjualan",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. GET - Penjualan Pulpen Pilot (Query Parameter)",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. READ - Detail penjualan",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "5. PATCH - Batalkan penjualan",
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "name": "1. READ - Barang stok menipis",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "2. READ - Ketersediaan stok",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. READ - Laporan inventaris",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "4. READ - Laporan penjualan",
+          "method": "GET",
+          "status": 200
         }
       ]
     },
     {
-      "name": "02 Tambah barang A",
-      "method": "POST",
-      "status": 201,
-      "assertions": [
+      "name": "CREATE berulang dan READ satu barang",
+      "requests": 5,
+      "assertions": 14,
+      "failures": [],
+      "responses": [
         {
-          "name": "HTTP 201",
-          "passed": true
+          "name": "0. Health Check",
+          "method": "GET",
+          "status": 200
         },
         {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
+          "name": "1. READ - Ambil semua barang",
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "name": "3. CREATE - Tambah pulpen Standard",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "3. CREATE - Tambah pulpen Standard",
+          "method": "POST",
+          "status": 201
+        },
+        {
+          "name": "4. READ - Detail pulpen Standard AE7",
+          "method": "GET",
+          "status": 200
         }
       ]
     },
     {
-      "name": "03 Tambah barang B",
-      "method": "POST",
-      "status": 201,
-      "assertions": [
-        {
-          "name": "HTTP 201",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "04 Nama duplikat ditolak",
-      "method": "POST",
-      "status": 409,
-      "assertions": [
-        {
-          "name": "HTTP 409",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "05 Validasi angka negatif",
-      "method": "POST",
-      "status": 400,
-      "assertions": [
-        {
-          "name": "HTTP 400",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "06 Detail barang dan path parameter",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Stok awal nol",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "07 PUT Ganti data barang",
-      "method": "PUT",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response berhasil",
-          "passed": true
-        },
-        {
-          "name": "Stok tidak ditimpa PUT",
-          "passed": true
-        },
-        {
-          "name": "Timestamp otomatis",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "08 PUT Data tidak lengkap ditolak",
-      "method": "PUT",
-      "status": 400,
-      "assertions": [
-        {
-          "name": "HTTP 400",
-          "passed": true
-        },
-        {
-          "name": "Response gagal",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "09 Update data barang",
-      "method": "PATCH",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "10 Daftar barang dan query parameter",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Dua barang demo ditemukan",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "11 Restock banyak item",
-      "method": "POST",
-      "status": 201,
-      "assertions": [
-        {
-          "name": "HTTP 201",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Nomor restock normal",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "12 Penjualan banyak item",
-      "method": "POST",
-      "status": 201,
-      "assertions": [
-        {
-          "name": "HTTP 201",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Total penjualan 22000",
-          "passed": true
-        },
-        {
-          "name": "Memuat dua detail barang",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "13 Stok otomatis setelah penjualan",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Stok A menjadi 3",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "14 Stok tidak cukup membatalkan semua item",
-      "method": "POST",
-      "status": 409,
-      "assertions": [
-        {
-          "name": "HTTP 409",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "15 Pastikan stok tidak berubah setelah gagal",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Stok A tetap 3",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "16 Detail transaksi",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "17 Riwayat dengan filter barang jenis dan status",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Hanya satu penjualan berhasil",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "18 Filter tanggal riwayat",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "19 Stok menipis",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "20 Ketersediaan stok",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "21 Ringkasan inventaris",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "22 Laporan penjualan dan query tanggal",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Penjualan demo tercakup",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "23 Harga transaksi tidak boleh dikirim client",
-      "method": "POST",
-      "status": 400,
-      "assertions": [
-        {
-          "name": "HTTP 400",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "24 Pembatalan penjualan",
-      "method": "PATCH",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Status dibatalkan",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "25 Stok pulih setelah pembatalan",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Stok A kembali 5",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "26 Pembatalan dua kali ditolak",
-      "method": "PATCH",
-      "status": 409,
-      "assertions": [
-        {
-          "name": "HTTP 409",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "27 Pembatalan restock",
-      "method": "PATCH",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "28 Hapus permanen barang A",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Barang benar-benar terhapus",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "28 Hapus permanen barang A",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Barang benar-benar terhapus",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "29 Hapus permanen barang B",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Barang benar-benar terhapus",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "29 Hapus permanen barang B",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        },
-        {
-          "name": "Barang benar-benar terhapus",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "30 ID invalid ditolak",
-      "method": "GET",
-      "status": 400,
-      "assertions": [
-        {
-          "name": "HTTP 400",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "31 Barang tidak ditemukan",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 404",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "32 Query tanggal invalid ditolak",
-      "method": "GET",
-      "status": 400,
-      "assertions": [
-        {
-          "name": "HTTP 400",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "33 Endpoint tidak ditemukan",
-      "method": "GET",
-      "status": 404,
-      "assertions": [
-        {
-          "name": "HTTP 404",
-          "passed": true
-        },
-        {
-          "name": "Response JSON dan success sesuai",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "34 Riwayat restock",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response berhasil",
-          "passed": true
-        }
-      ]
-    },
-    {
-      "name": "35 Detail restock",
-      "method": "GET",
-      "status": 200,
-      "assertions": [
-        {
-          "name": "HTTP 200",
-          "passed": true
-        },
-        {
-          "name": "Response berhasil",
-          "passed": true
-        }
-      ]
+      "name": "READ tanpa ID tidak dikirim",
+      "requests": 0,
+      "assertions": 0,
+      "failures": [],
+      "responses": []
     }
   ]
 }

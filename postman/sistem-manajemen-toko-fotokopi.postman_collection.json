@@ -1,57 +1,58 @@
 {
   "info": {
-    "name": "Sistem Manajemen Toko Fotokopi",
+    "name": "Sistem Manajemen Toko Fotokopi ",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection presentasi. Jalankan npm start dan pastikan barang awal sudah diisi dengan npm run seed. Mulai dari 0. Health Check, lalu jalankan folder berurutan. Barang CRUD contoh dihapus di akhir folder Barang; restock dan penjualan dibatalkan untuk mengembalikan stok. Jika berhenti di tengah, perubahan yang sudah dikirim tetap berlaku. Jangan mengirim ulang penjualan yang sudah berhasil tanpa memeriksa riwayat.\n\nArti variabel: pulpenPilotId = Pulpen Pilot Hitam; bukuTulisId = Buku Tulis Sinar Dunia 38; pulpenContohId = pulpen baru dari langkah 3. Arahkan mouse ke {{baseUrl}} untuk melihat nilainya, atau buka Variables pada collection. ID harus diambil dari field _id response, bukan nomor TRX/RST. Jangan mengisi ID sendiri jika mengikuti langkah berurutan."
+    "description": "Jalankan berurutan mulai dari 0. Health Check.",
+    "_postman_id": "41227101-d3b9-4670-8dce-c097b59a4ce6"
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://127.0.0.1:3000",
       "type": "string",
-      "description": "Alamat API lokal. Tidak perlu diganti jika server menggunakan port 3000."
+      "description": "Alamat API lokal."
     },
     {
-      "key": "kodeContoh",
+      "key": "kodeBarang",
       "value": "",
       "type": "string",
-      "description": "Angka unik untuk nama pulpen contoh. Diisi otomatis saat mengirim 0. Health Check."
+      "description": "Kode unik barang; otomatis."
     },
     {
       "key": "pulpenPilotId",
       "value": "",
       "type": "string",
-      "description": "ID Pulpen Pilot Hitam. Diisi otomatis dari folder Barang, langkah 1: READ semua barang."
+      "description": "ID Pulpen Pilot Hitam."
     },
     {
       "key": "bukuTulisId",
       "value": "",
       "type": "string",
-      "description": "ID Buku Tulis Sinar Dunia 38. Diisi otomatis dari folder Barang, langkah 1: READ semua barang."
+      "description": "ID Buku Tulis Sinar Dunia 38."
     },
     {
-      "key": "pulpenContohId",
+      "key": "pulpenStandardId",
       "value": "",
       "type": "string",
-      "description": "ID pulpen baru yang dibuat pada langkah 3. Dipakai untuk READ detail, PUT, PATCH, dan DELETE pada langkah 4–7."
+      "description": "ID Pulpen Standard AE7 dari CREATE."
     },
     {
       "key": "restockContohId",
       "value": "",
       "type": "string",
-      "description": "ID restock dari langkah Tambah restock. Dipakai untuk detail dan pembatalan restock tersebut."
+      "description": "ID hasil tambah restock."
     },
     {
       "key": "penjualanContohId",
       "value": "",
       "type": "string",
-      "description": "ID penjualan dari langkah Catat penjualan. Dipakai untuk detail dan pembatalan penjualan tersebut."
+      "description": "ID hasil penjualan."
     },
     {
       "key": "waktuDibuat",
       "value": "",
       "type": "string",
-      "description": "createdAt pulpen contoh. Diisi otomatis dan hanya dipakai untuk menguji timestamp; tidak perlu diisi manual."
+      "description": "Waktu pembuatan barang; otomatis."
     }
   ],
   "item": [
@@ -78,7 +79,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.collectionVariables.set('kodeContoh', Date.now().toString());"
+              "pm.collectionVariables.set('kodeBarang', Date.now().toString());"
             ]
           }
         },
@@ -101,7 +102,7 @@
           "name": "1. READ - Ambil semua barang",
           "request": {
             "method": "GET",
-            "description": "Menampilkan barang dan menyimpan ID dua barang yang jelas namanya: Pulpen Pilot Hitam dan Buku Tulis Sinar Dunia 38. Klik Send terlebih dahulu sebelum mencoba folder Restock/Penjualan. Nilainya dapat dilihat di collection → Variables.",
+            "description": "Lihat barang dan simpan ID pulpen/buku.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/barang?sort=terbaru&limit=100",
@@ -116,12 +117,12 @@
                 {
                   "key": "sort",
                   "value": "terbaru",
-                  "description": "Urutkan barang terbaru dahulu."
+                  "description": "Urutan hasil."
                 },
                 {
                   "key": "limit",
                   "value": "100",
-                  "description": "Jumlah maksimal barang yang ditampilkan."
+                  "description": "Batas hasil."
                 }
               ]
             }
@@ -149,7 +150,7 @@
           "name": "2. READ - Cari pulpen (Query Parameter)",
           "request": {
             "method": "GET",
-            "description": "",
+            "description": "Cari pulpen berdasarkan kategori.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/barang?kategori=Alat%20Tulis&q=pulpen&sort=stok",
@@ -164,17 +165,17 @@
                 {
                   "key": "kategori",
                   "value": "Alat Tulis",
-                  "description": "Nama kategori barang yang dicari."
+                  "description": "Kategori barang."
                 },
                 {
                   "key": "q",
                   "value": "pulpen",
-                  "description": "Teks nama barang yang dicari, misalnya pulpen."
+                  "description": "Cari nama."
                 },
                 {
                   "key": "sort",
                   "value": "stok",
-                  "description": "Urutkan dari stok paling sedikit."
+                  "description": "Urutan hasil."
                 }
               ]
             }
@@ -193,10 +194,10 @@
           ]
         },
         {
-          "name": "3. CREATE - Tambah pulpen contoh",
+          "name": "3. CREATE - Tambah pulpen Standard",
           "request": {
             "method": "POST",
-            "description": "Membuat barang baru bernama Pulpen Presentasi + kode unik. ID hasil response disimpan sebagai pulpenContohId. Barang ini yang dipakai dalam langkah 4, 5, 6, dan 7; berbeda dari Pulpen Pilot Hitam milik data awal.",
+            "description": "Buat pulpen baru; simpan ID otomatis.",
             "header": [
               {
                 "key": "Content-Type",
@@ -215,7 +216,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nama\": \"Pulpen Presentasi {{kodeContoh}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 3500,\n  \"stok\": 10,\n  \"stokMinimum\": 3\n}",
+              "raw": "{\n  \"nama\": \"Pulpen Standard AE7 Hitam {{kodeBarang}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 3500,\n  \"stok\": 10,\n  \"stokMinimum\": 3\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -224,6 +225,19 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const kode = Date.now().toString() + '-' + Math.floor(Math.random() * 1000000);",
+                  "pm.collectionVariables.set('kodeBarang', kode);",
+                  "pm.variables.set('kodeBarang', kode);",
+                  "pm.collectionVariables.set('pulpenStandardId', '');",
+                  "pm.collectionVariables.set('waktuDibuat', '');"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -231,49 +245,74 @@
                 "exec": [
                   "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
                   "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
-                  "pm.collectionVariables.set('pulpenContohId', pm.response.json().data._id);",
-                  "pm.collectionVariables.set('waktuDibuat', pm.response.json().data.createdAt);"
+                  "const result = pm.response.json().data;",
+                  "if (pm.response.code === 201 && result && /^[a-f0-9]{24}$/i.test(result._id || '')) {",
+                  "  pm.collectionVariables.set('pulpenStandardId', result._id);",
+                  "  pm.collectionVariables.set('waktuDibuat', result.createdAt);",
+                  "}",
+                  "pm.test('ID tersimpan otomatis', () => { pm.expect(pm.collectionVariables.get('pulpenStandardId')).to.match(/^[a-f0-9]{24}$/i); pm.expect(pm.collectionVariables.get('pulpenStandardId')).to.eql(result && result._id); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "4. READ - Detail pulpen dari langkah 3",
+          "name": "4. READ - Detail pulpen Standard AE7",
           "request": {
             "method": "GET",
-            "description": "Menampilkan pulpen contoh yang baru ditambahkan pada langkah 3. {{pulpenContohId}} berisi _id dari response CREATE. Hover variabel untuk melihat ID aslinya.",
+            "description": "Lihat pulpen Standard AE7.",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "raw": "{{baseUrl}}/api/barang/{{pulpenStandardId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "barang",
-                "{{pulpenContohId}}"
+                "{{pulpenStandardId}}"
               ]
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenStandardId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Response hanya satu data', () => { const data = pm.response.json().data; pm.expect(Array.isArray(data)).to.eql(false); pm.expect(data._id).to.eql(pm.collectionVariables.get('pulpenStandardId')); });"
                 ]
               }
             }
           ]
         },
         {
-          "name": "5. PUT - Ganti data pulpen contoh",
+          "name": "5. PUT - Ganti data pulpen Standard",
           "request": {
             "method": "PUT",
-            "description": "Mengganti nama, kategori, harga, dan stok minimum pulpen dari langkah 3. Semua 4 field harus diisi. Stok dan timestamp tidak dikirim.",
+            "description": "Ganti empat field pulpen Standard.",
             "header": [
               {
                 "key": "Content-Type",
@@ -281,19 +320,19 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "raw": "{{baseUrl}}/api/barang/{{pulpenStandardId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "barang",
-                "{{pulpenContohId}}"
+                "{{pulpenStandardId}}"
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nama\": \"Pulpen Gel Presentasi {{kodeContoh}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 4500,\n  \"stokMinimum\": 5\n}",
+              "raw": "{\n  \"nama\": \"Pulpen Standard AE7 Biru {{kodeBarang}}\",\n  \"kategori\": \"Alat Tulis\",\n  \"harga\": 4500,\n  \"stokMinimum\": 5\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -302,6 +341,26 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenStandardId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -316,10 +375,10 @@
           ]
         },
         {
-          "name": "6. PATCH - Ubah harga pulpen contoh",
+          "name": "6. PATCH - Ubah harga pulpen Standard",
           "request": {
             "method": "PATCH",
-            "description": "Mengubah hanya harga pulpen dari langkah 3 menjadi Rp5.000. Field lainnya tetap.",
+            "description": "Ubah harga pulpen Standard.",
             "header": [
               {
                 "key": "Content-Type",
@@ -327,14 +386,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "raw": "{{baseUrl}}/api/barang/{{pulpenStandardId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "barang",
-                "{{pulpenContohId}}"
+                "{{pulpenStandardId}}"
               ]
             },
             "body": {
@@ -349,6 +408,26 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenStandardId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -361,24 +440,44 @@
           ]
         },
         {
-          "name": "7. DELETE - Hapus pulpen dari langkah 3",
+          "name": "7. DELETE - Hapus pulpen Standard AE7",
           "request": {
             "method": "DELETE",
-            "description": "Menghapus permanen pulpen contoh dari langkah 3 (namanya menjadi Pulpen Gel Presentasi setelah PUT). {{pulpenContohId}} menunjukkan ID barang tersebut. Body: none, karena DELETE memilih barang melalui ID di URL. Pulpen Pilot Hitam dan Buku Tulis data awal tidak dihapus oleh request ini.",
+            "description": "Hapus pulpen Standard. Body kosong.",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/barang/{{pulpenContohId}}",
+              "raw": "{{baseUrl}}/api/barang/{{pulpenStandardId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "barang",
-                "{{pulpenContohId}}"
+                "{{pulpenStandardId}}"
               ]
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenStandardId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -395,7 +494,7 @@
           "name": "8. ERROR - Nama kosong (400)",
           "request": {
             "method": "POST",
-            "description": "",
+            "description": "Contoh nama kosong: harus 400.",
             "header": [
               {
                 "key": "Content-Type",
@@ -439,7 +538,7 @@
           "name": "9. ERROR - Barang tidak ditemukan (404)",
           "request": {
             "method": "GET",
-            "description": "",
+            "description": "Contoh barang tidak ada: harus 404.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/barang/000000000000000000000000",
@@ -470,7 +569,7 @@
           "name": "10. ERROR - ID bukan ObjectId (400)",
           "request": {
             "method": "GET",
-            "description": "",
+            "description": "Contoh ID salah: harus 400.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/barang/bukan-id",
@@ -506,7 +605,7 @@
           "name": "1. POST - Restock Pulpen Pilot dan Buku Tulis",
           "request": {
             "method": "POST",
-            "description": "Menambah 10 Pulpen Pilot Hitam dan 5 Buku Tulis Sinar Dunia 38. pulpenPilotId/bukuTulisId diisi dari Barang → 1. READ. Jumlah berarti tambahan stok, bukan stok akhir.",
+            "description": "Tambah 10 pulpen dan 5 buku.",
             "header": [
               {
                 "key": "Content-Type",
@@ -525,7 +624,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 10\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 5\n    }\n  ],\n  \"catatan\": \"Restock untuk presentasi\"\n}",
+              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 10\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 5\n    }\n  ],\n  \"catatan\": \"Pengadaan stok alat tulis\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -535,13 +634,37 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenPilotId\",\"bukuTulisId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
                   "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
-                  "pm.collectionVariables.set('restockContohId', pm.response.json().data._id);"
+                  "const result = pm.response.json().data;",
+                  "if (pm.response.code === 201 && result && /^[a-f0-9]{24}$/i.test(result._id || '')) {",
+                  "  pm.collectionVariables.set('restockContohId', result._id);",
+                  "}",
+                  "pm.test('ID tersimpan otomatis', () => { pm.expect(pm.collectionVariables.get('restockContohId')).to.match(/^[a-f0-9]{24}$/i); pm.expect(pm.collectionVariables.get('restockContohId')).to.eql(result && result._id); });"
                 ]
               }
             }
@@ -551,7 +674,7 @@
           "name": "2. GET - Riwayat restock Pulpen Pilot",
           "request": {
             "method": "GET",
-            "description": "Menampilkan restock selesai yang memuat Pulpen Pilot Hitam. Query barangId memakai {{pulpenPilotId}}, bukan ID barang sembarang.",
+            "description": "Restock selesai milik Pulpen Pilot.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/restock?status=selesai&barangId={{pulpenPilotId}}",
@@ -566,17 +689,37 @@
                 {
                   "key": "status",
                   "value": "selesai",
-                  "description": "Status riwayat yang ingin ditampilkan, misalnya selesai."
+                  "description": "Status catatan."
                 },
                 {
                   "key": "barangId",
                   "value": "{{pulpenPilotId}}",
-                  "description": "ID Pulpen Pilot Hitam; otomatis dari Barang → 1. READ semua barang."
+                  "description": "Pulpen Pilot Hitam."
                 }
               ]
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenPilotId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -590,20 +733,19 @@
           ]
         },
         {
-          "name": "3. READ - Detail restock",
+          "name": "3. GET - Semua riwayat restock",
           "request": {
             "method": "GET",
-            "description": "Menampilkan restock contoh yang dibuat pada langkah 1 folder Restock. restockContohId adalah _id restock, bukan ID barang atau nomor RST.",
+            "description": "Semua riwayat restock beserta isi barangnya.",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/restock/{{restockContohId}}",
+              "raw": "{{baseUrl}}/api/restock",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "restock",
-                "{{restockContohId}}"
+                "restock"
               ]
             }
           },
@@ -614,7 +756,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Daftar restock beserta barangnya', () => { const rows = pm.response.json().data; pm.expect(Array.isArray(rows)).to.eql(true); rows.forEach(restock => { pm.expect(restock).to.have.property('nomorRestock'); pm.expect(Array.isArray(restock.items)).to.eql(true); restock.items.forEach(item => { pm.expect(item).to.have.property('nama'); pm.expect(item).to.have.property('jumlah'); }); }); });"
                 ]
               }
             }
@@ -624,7 +767,7 @@
           "name": "4. PATCH - Batalkan restock",
           "request": {
             "method": "PATCH",
-            "description": "Membatalkan restock dari langkah 1 sehingga 10 pulpen dan 5 buku dikurangi kembali. Isi alasan pada Body. Bisa gagal jika stok sudah tidak cukup.",
+            "description": "Batalkan restock dari langkah 1.",
             "header": [
               {
                 "key": "Content-Type",
@@ -655,6 +798,26 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"restockContohId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -675,7 +838,7 @@
           "name": "1. POST - Jual 3 Pulpen Pilot dan 2 Buku Tulis",
           "request": {
             "method": "POST",
-            "description": "Menjual 3 Pulpen Pilot Hitam dan 2 Buku Tulis Sinar Dunia 38. Harga dan total dihitung backend. ID berasal dari Barang → 1. READ.",
+            "description": "Jual 3 pulpen dan 2 buku.",
             "header": [
               {
                 "key": "Content-Type",
@@ -694,7 +857,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 3\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 2\n    }\n  ],\n  \"catatan\": \"Penjualan untuk presentasi\"\n}",
+              "raw": "{\n  \"items\": [\n    {\n      \"barangId\": \"{{pulpenPilotId}}\",\n      \"jumlah\": 3\n    },\n    {\n      \"barangId\": \"{{bukuTulisId}}\",\n      \"jumlah\": 2\n    }\n  ],\n  \"catatan\": \"Pembelian pulpen dan buku tulis\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -704,13 +867,37 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenPilotId\",\"bukuTulisId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
                   "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
-                  "pm.collectionVariables.set('penjualanContohId', pm.response.json().data._id);"
+                  "const result = pm.response.json().data;",
+                  "if (pm.response.code === 201 && result && /^[a-f0-9]{24}$/i.test(result._id || '')) {",
+                  "  pm.collectionVariables.set('penjualanContohId', result._id);",
+                  "}",
+                  "pm.test('ID tersimpan otomatis', () => { pm.expect(pm.collectionVariables.get('penjualanContohId')).to.match(/^[a-f0-9]{24}$/i); pm.expect(pm.collectionVariables.get('penjualanContohId')).to.eql(result && result._id); });"
                 ]
               }
             }
@@ -720,7 +907,7 @@
           "name": "2. READ - Riwayat penjualan",
           "request": {
             "method": "GET",
-            "description": "",
+            "description": "Lihat riwayat penjualan.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/transaksi",
@@ -750,7 +937,7 @@
           "name": "3. GET - Penjualan Pulpen Pilot (Query Parameter)",
           "request": {
             "method": "GET",
-            "description": "Hanya penjualan selesai yang berisi Pulpen Pilot Hitam.",
+            "description": "Penjualan selesai milik Pulpen Pilot.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/transaksi?status=selesai&barangId={{pulpenPilotId}}",
@@ -765,17 +952,37 @@
                 {
                   "key": "status",
                   "value": "selesai",
-                  "description": "Status riwayat yang ingin ditampilkan, misalnya selesai."
+                  "description": "Status catatan."
                 },
                 {
                   "key": "barangId",
                   "value": "{{pulpenPilotId}}",
-                  "description": "ID Pulpen Pilot Hitam; otomatis dari Barang → 1. READ semua barang."
+                  "description": "Pulpen Pilot Hitam."
                 }
               ]
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"pulpenPilotId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -792,7 +999,7 @@
           "name": "4. READ - Detail penjualan",
           "request": {
             "method": "GET",
-            "description": "Menampilkan penjualan contoh dari langkah 1 folder Penjualan. penjualanContohId berisi _id response penjualan, bukan nomor TRX.",
+            "description": "Detail penjualan dari langkah 1.",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/transaksi/{{penjualanContohId}}",
@@ -808,12 +1015,33 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"penjualanContohId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));"
+                  "pm.test('Response sesuai', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Response hanya satu data', () => { const data = pm.response.json().data; pm.expect(Array.isArray(data)).to.eql(false); pm.expect(data._id).to.eql(pm.collectionVariables.get('penjualanContohId')); });"
                 ]
               }
             }
@@ -823,7 +1051,7 @@
           "name": "5. PATCH - Batalkan penjualan",
           "request": {
             "method": "PATCH",
-            "description": "Membatalkan penjualan contoh dari langkah 1 dan mengembalikan 3 pulpen serta 2 buku ke stok. Body hanya berisi alasan pembatalan.",
+            "description": "Batalkan penjualan dari langkah 1.",
             "header": [
               {
                 "key": "Content-Type",
@@ -853,6 +1081,26 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"penjualanContohId\"];",
+                  "const petunjuk = {\"pulpenStandardId\":\"Kirim 3. CREATE terlebih dahulu dan pastikan 201 Created.\",\"pulpenPilotId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"bukuTulisId\":\"Kirim Barang - 1. READ semua barang terlebih dahulu.\",\"restockContohId\":\"Kirim Restock - 1. POST terlebih dahulu.\",\"penjualanContohId\":\"Kirim Penjualan - 1. POST terlebih dahulu.\"};",
+                  "for (const key of required) {",
+                  "  const id = pm.collectionVariables.get(key);",
+                  "  if (!/^[a-f0-9]{24}$/i.test(id || '')) {",
+                  "    console.error('ID belum tersedia. ' + petunjuk[key]);",
+                  "    pm.execution.skipRequest();",
+                  "    break;",
+                  "  }",
+                  "  pm.variables.set(key, id);",
+                  "}",
+                  "if (pm.collectionVariables.get('kodeBarang')) pm.variables.set('kodeBarang', pm.collectionVariables.get('kodeBarang'));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -890,7 +1138,7 @@
                 {
                   "key": "batas",
                   "value": "10",
-                  "description": "Batas stok menipis; nilai 10 berarti stok 10 atau kurang."
+                  "description": "Batas stok."
                 }
               ]
             }
@@ -990,12 +1238,12 @@
                 {
                   "key": "dari",
                   "value": "2026-11-01",
-                  "description": "Tanggal awal YYYY-MM-DD, termasuk hari tersebut (WIB)."
+                  "description": "Tanggal awal, WIB."
                 },
                 {
                   "key": "sampai",
                   "value": "2026-11-30",
-                  "description": "Tanggal akhir YYYY-MM-DD, termasuk hari tersebut (WIB)."
+                  "description": "Tanggal akhir, WIB."
                 }
               ]
             }
