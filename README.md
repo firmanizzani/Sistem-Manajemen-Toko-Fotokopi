@@ -34,7 +34,7 @@ npm start
 
 Salin `.env` hanya saat instalasi pertama. API: `http://127.0.0.1:3000`.
 
-Data contoh opsional: jalankan `npm run seed`, lalu `npm run seed:transaksi`. Perintah ini mengisi 15 barang, 3 penjualan, dan 2 restock tanpa menggandakan contoh yang sudah ada.
+Data contoh opsional: jalankan berurutan `npm run seed` (15 barang), `npm run seed:restock` (2 restock), lalu `npm run seed:transaksi` (3 penjualan). Setiap script melewati contoh yang sudah ada agar tidak menggandakan data dan perubahan stok.
 
 ## Endpoint API
 

@@ -1,6 +1,6 @@
 {
   "project": "Sistem Manajemen Toko Fotokopi",
-  "runAt": "2026-11-21T00:42:30.562Z",
+  "runAt": "2026-11-21T01:04:13.264Z",
   "runner": "Node Test Runner dan Newman",
   "database": "Database uji sementara, terpisah dari data utama.",
   "passed": true,

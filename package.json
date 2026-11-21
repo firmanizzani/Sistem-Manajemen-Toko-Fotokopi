@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "seed": "node scripts/seed.js",
+    "seed:restock": "node scripts/seed-restock.js",
     "seed:transaksi": "node scripts/seed-transaksi.js",
     "test": "node --test --test-concurrency=1 tests/api.test.js tests/postman.test.js",
     "test:postman": "node --test --test-concurrency=1 tests/postman.test.js"
