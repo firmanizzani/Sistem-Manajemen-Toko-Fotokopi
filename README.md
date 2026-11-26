@@ -22,6 +22,68 @@ Pengguna dapat mengelola data barang, mencatat penjualan beberapa barang sekalig
 
 Node.js >=20.19, ExpressJS, MongoDB, Mongoose, dan dotenv. Pengujian: Supertest, Node Test Runner, serta Newman/Postman.
 
+## Struktur Folder
+
+```text
+Finalproject/
+├── data/                       # Data contoh untuk seed dan pengujian
+│   └── barang-awal.json
+├── postman/                    # Collection API dan laporan pengujiannya
+│   ├── sistem-manajemen-toko-fotokopi.postman_collection.json
+│   └── hasil-pengujian.json
+├── scripts/                    # Script pengisian data contoh ke MongoDB
+│   ├── seed.js
+│   ├── seed-restock.js
+│   └── seed-transaksi.js
+├── src/                        # Kode utama aplikasi
+│   ├── config/                 # Konfigurasi koneksi MongoDB
+│   │   └── database.js
+│   ├── controllers/            # Membaca request dan mengirim respons JSON
+│   │   ├── barangController.js
+│   │   ├── laporanController.js
+│   │   ├── restockController.js
+│   │   └── transaksiController.js
+│   ├── middlewares/            # Pemeriksaan tipe konten dan penanganan error
+│   │   ├── errorHandler.js
+│   │   ├── notFound.js
+│   │   └── validateJson.js
+│   ├── models/                 # Schema dan model data Mongoose
+│   │   ├── Barang.js
+│   │   ├── Restock.js
+│   │   └── Transaksi.js
+│   ├── routes/                 # Pemetaan method dan URL ke controller
+│   │   ├── barangRoutes.js
+│   │   ├── laporanRoutes.js
+│   │   ├── restockRoutes.js
+│   │   └── transaksiRoutes.js
+│   ├── services/               # Aturan bisnis, perubahan stok, dan laporan
+│   │   ├── barangService.js
+│   │   ├── laporanService.js
+│   │   ├── restockService.js
+│   │   └── transaksiService.js
+│   ├── utils/                  # Alat bantu error, pagination, dan filter
+│   │   ├── AppError.js
+│   │   └── queryHelpers.js
+│   ├── validators/             # Validasi input barang, transaksi, dan query
+│   │   ├── barangValidator.js
+│   │   ├── commonValidator.js
+│   │   └── transaksiValidator.js
+│   ├── app.js                  # Menyusun middleware dan route Express
+│   └── server.js               # Menghubungkan database dan menjalankan server
+├── tests/                      # Pengujian otomatis API dan collection Postman
+│   ├── api.test.js
+│   └── postman.test.js
+├── .env.example                # Template konfigurasi environment
+├── .gitignore                  # Aturan file yang diabaikan Git
+├── package.json                # Identitas, dependency, dan perintah npm
+├── package-lock.json           # Versi dependency yang dikunci npm
+└── README.md                   # Dokumentasi proyek
+```
+
+File `.env` dibuat saat setup lokal, sedangkan `node_modules/` dihasilkan oleh instalasi dependency. Keduanya diabaikan Git dan tidak ditampilkan pada struktur di atas.
+
+Alur utama request: **route → controller → service → model → MongoDB**. Service memanggil validator untuk memeriksa input, controller mengirim hasil sebagai JSON, dan middleware `errorHandler` menangani error yang diteruskan.
+
 ## Menjalankan
 
 Pastikan service MongoDB aktif pada port **27017** dengan replica set **rsFotokopi**. Jalankan dari folder **Finalproject**:
